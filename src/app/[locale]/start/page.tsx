@@ -71,9 +71,9 @@ export default async function StartPage({ params }: { params: Promise<{ locale: 
   };
 
   return (
-    <div className="pt-[var(--header-h)]">
+    <div className="pt-[calc(var(--announce-h,0px)+var(--header-h))]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }} />
-      <section className="container-x py-14 md:py-20">
+      <section className="container-x pb-16 pt-10 md:pb-24 md:pt-14">
         <Breadcrumb
           items={[{ label: d.nav.home, href: href(locale, "/") }, { label: fa ? "شروع همکاری" : "Start" }]}
           locale={locale}

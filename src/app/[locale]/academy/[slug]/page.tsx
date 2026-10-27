@@ -484,12 +484,12 @@ export default async function EducationDetail({ params }: Props) {
       />
 
       {related.length > 0 && (
-        <section className="bg-background-secondary">
-          <div className="container-x section-y">
-            <SectionHeader eyebrow={d.nav.education} title={d.common.relatedTutorials} href={href(locale, "/academy")} hrefLabel={d.nav.viewAll} />
+        /* Stays on the plain page surface: the proof band above may be hidden
+           when no related work exists, and two adjacent dark bands read as one. */
+        <section className="container-x section-y border-t border-border">
+          <SectionHeader eyebrow={d.nav.education} title={d.common.relatedTutorials} href={href(locale, "/academy")} hrefLabel={d.nav.viewAll} />
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((x, i) => <Reveal key={x.id} delay={i * 70}><EducationCard item={x} /></Reveal>)}
-          </div>
           </div>
         </section>
       )}

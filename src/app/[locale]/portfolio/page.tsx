@@ -68,7 +68,7 @@ export default async function PortfolioPage({
       <PortfolioIntro locale={locale} />
 
       {/* Works heading — the gallery that follows the introduction */}
-      <section id="works" className="container-x scroll-mt-[calc(var(--header-h)+1rem)] pt-16">
+      <section id="works" className="container-x scroll-mt-[calc(var(--header-h)+1rem)] pb-12 pt-16">
         <p className="text-label flex items-center gap-3 text-accent">
           <span className="inline-block h-px w-6 bg-accent/60" />
           {locale === "fa" ? "آثار و پروژه‌ها" : "Works & projects"}
@@ -87,7 +87,7 @@ export default async function PortfolioPage({
       <TrustBar works={items} locale={locale} />
 
       {/* Grid */}
-      <section className="container-x pb-20 pt-6">
+      <section className="container-x pb-20 pt-10">
         <Suspense>
           <PortfolioGrid items={items} categories={categories} initialDiscipline={discipline} />
         </Suspense>
