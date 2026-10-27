@@ -2,9 +2,6 @@ import type { Locale } from "@/lib/i18n/types";
 
 interface TrustWork {
   client: { fa: string; en: string };
-  location: { fa: string; en: string };
-  scope: { fa: string; en: string };
-  isProject: boolean;
   category?: { name: { fa: string; en: string } } | null;
 }
 
@@ -16,8 +13,8 @@ function label(value: { fa: string; en: string } | undefined, locale: Locale): s
 }
 
 /**
- * Trust band built only from facts already stored on the works: realised
- * projects, named clients, disciplines and cities. No invented statistics.
+ * Trust strip built only from facts already stored on the works: named clients
+ * and design disciplines. No invented statistics.
  */
 export function TrustBar({ works, locale }: { works: TrustWork[]; locale: Locale }) {
   const fa = locale === "fa";
@@ -32,9 +29,6 @@ export function TrustBar({ works, locale }: { works: TrustWork[]; locale: Locale
       .map((client) => label(client, locale)),
   )];
   const disciplines = [...new Set(works.map((work) => label(work.category?.name, locale)).filter(Boolean))];
-  const cities = [...new Set(works.map((work) => label(work.location, locale)).filter(Boolean))];
-  const projects = works.filter((work) => work.isProject).length;
-
   if (!clients.length && !disciplines.length) return null;
 
   /*

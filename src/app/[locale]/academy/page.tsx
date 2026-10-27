@@ -250,40 +250,42 @@ export default async function AcademyPage({
       {academyBanners.map((banner) => <SiteContentBanner key={banner.id} banner={banner} locale={locale} />)}
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#0c1018] text-white">
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0c1018]" />
+      <section className="relative isolate overflow-hidden bg-[#0c1018] text-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(85%_65%_at_78%_0%,rgba(201,162,39,0.18)_0%,rgba(12,16,24,0)_62%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0c1018] via-[#0c1018]/70 to-transparent" />
+        <div aria-hidden className="hero-grain pointer-events-none absolute inset-0" />
 
-        <div className="container-x relative z-10 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+2rem)] pb-12 md:pt-[calc(var(--header-h)+3rem)] md:pb-20">
-          <div className="grid gap-9 lg:grid-cols-12 lg:items-center lg:gap-12">
-            {/* Left: copy */}
-            <div className="lg:col-span-5">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-caption text-white/70 mb-6 backdrop-blur-sm">
+        <div className="container-x relative z-10 pb-12 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-16 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
+          {/* Rail */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/12 pb-4 text-[10px] tracking-[0.26em] text-white/40" dir="ltr">
+            <span>ROSIE ATELIER — ACADEMY</span>
+            <span className="text-[#d6bc8e]/90">01 / SCHOOL</span>
+          </div>
+
+          <div className="grid gap-10 py-9 md:py-12 lg:grid-cols-12 lg:items-center lg:gap-14">
+            {/* Copy */}
+            <div className="min-w-0 lg:col-span-5">
+              <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-[#d6bc8e]">
                 <GraduationCap className="h-3.5 w-3.5" />
                 {d.nav.education}
               </span>
-              <h1 className="anim-blur-in font-display text-h1 text-white text-balance leading-tight">
+
+              <h1 className="anim-blur-in mt-5 font-display text-[clamp(2rem,6.6vw,4.1rem)] leading-[1.16] text-white">
                 {isFA ? (
                   <>
-                    آکادمی آتلیه رزی<br />
-                    <span className="text-accent">یاد بگیر، بساز، بفروش.</span>
+                    آکادمی آتلیه رزی
+                    <span className="mt-1 block text-[#e4cba4]">یاد بگیر، بساز، بفروش.</span>
                   </>
                 ) : (
                   <>
-                    Rosie Atelier Academy<br />
-                    <span className="text-accent">Learn, Build, Publish.</span>
+                    Rosie Atelier Academy
+                    <span className="mt-1 block text-[#e4cba4]">Learn, Build, Publish.</span>
                   </>
                 )}
               </h1>
+
               <p
-                className="anim-blur-in mt-5 text-body-lg text-white/70 max-w-md"
+                className="anim-blur-in mt-5 max-w-[44ch] text-[15px] leading-8 text-white/70 md:text-base"
                 style={{ animationDelay: "80ms" }}
               >
                 {isFA
@@ -291,53 +293,53 @@ export default async function AcademyPage({
                   : "Specialist pattern design courses, live workshops and professional webinars — from foundations to international publishing."}
               </p>
 
-              {/* Stats row — computed from published courses and real registrations */}
-              <div
-                className="anim-fade-up mt-8 flex flex-wrap gap-8 text-caption text-white/60 tabular"
-                style={{ animationDelay: "160ms" }}
-              >
-                {heroStats.map((stat) => (
-                  <span key={stat.label}>
-                    <strong className="block font-display text-h3 text-white">{stat.value}</strong>
-                    {stat.label}
-                  </span>
-                ))}
+              <div className="anim-fade-up mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3" style={{ animationDelay: "160ms" }}>
+                <a
+                  href="#courses"
+                  className="group inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[#e4cba4] px-7 text-sm font-semibold text-[#17201b] transition-colors hover:bg-[#f0ddbd] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                >
+                  {isFA ? "شروع یادگیری" : "Start learning"}
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 rtl-flip" aria-hidden />
+                </a>
+                {featured && (
+                  <Link
+                    href={href(locale, `/academy/${featured.slug}`)}
+                    className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full border border-white/20 px-6 text-sm text-white/85 transition-colors hover:border-white/40 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  >
+                    {isFA ? "دورهٔ شاخص" : "Featured course"}
+                  </Link>
+                )}
               </div>
 
-              {/* Perks */}
-              <ul className="mt-8 grid grid-cols-2 gap-3">
-                {perks.map(({ icon: Icon, label, desc }) => (
-                  <li key={label} className="flex items-start gap-2.5">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/8 mt-0.5">
-                      <Icon className="h-3.5 w-3.5 text-accent" />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-medium text-white">{label}</span>
-                      <span className="block text-caption text-white/50">{desc}</span>
-                    </span>
-                  </li>
+              {/* Numbers, ruled like an editorial index */}
+              <dl className="anim-fade-up mt-9 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-white/12 pt-5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4" style={{ animationDelay: "220ms" }}>
+                {heroStats.map((stat) => (
+                  <div key={stat.label} className="min-w-0">
+                    <dt className="text-[10px] uppercase tracking-[0.2em] text-white/40">{stat.label}</dt>
+                    <dd className="mt-1 font-display text-h3 tabular-nums leading-none text-white">{stat.value}</dd>
+                  </div>
                 ))}
-              </ul>
+              </dl>
             </div>
 
-            {/* Right: featured course with its real preview video */}
+            {/* Featured preview plate */}
             {featured && (
-              <div className="lg:col-span-7">
-                <Reveal>
+              <div className="min-w-0 lg:col-span-7">
+                <div className="relative rounded-[26px] border border-white/12 bg-white/[0.04] p-2.5 shadow-[0_40px_90px_-50px_rgba(0,0,0,0.95)] backdrop-blur-[2px]">
                   <AcademyHeroPreview src={heroVideo} poster={featured.image}>
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/90 px-3 py-1 text-caption font-medium text-white backdrop-blur-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e4cba4] px-3 py-1 text-[11px] font-semibold text-[#17201b]">
                         {featuredVideo
                           ? `${isFA ? "پیش‌نمایش درس رایگان" : "Free lesson preview"} · ${d.common[featured.type]}`
-                          : isFA ? "فیلم معرفی آکادمی آتلیه رزی" : "Rosie Atelier Academy preview film"}
+                          : isFA ? "فیلم معرفی آکادمی" : "Academy preview film"}
                       </span>
                       {featured.category && (
-                        <span className="rounded-full border border-white/20 px-3 py-1 text-caption text-white/70 backdrop-blur-sm">
+                        <span className="rounded-full border border-white/20 px-3 py-1 text-[11px] text-white/70 backdrop-blur-sm">
                           {t(featured.category.name, locale)}
                         </span>
                       )}
                       {(featuredStats?.enrollments ?? 0) > 0 && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1 text-caption text-white/70 backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1 text-[11px] text-white/70 backdrop-blur-sm">
                           <Users className="h-3 w-3" />
                           {isFA
                             ? `${n(featuredStats!.enrollments)} ثبت‌نام`
@@ -345,42 +347,55 @@ export default async function AcademyPage({
                         </span>
                       )}
                     </div>
-                    <h2 className="font-display text-h2 text-white text-balance">
+                    <h2 className="mt-4 font-display text-h3 text-white text-balance">
                       <Link href={href(locale, `/academy/${featured.slug}`)} className="hover:text-white/90">
                         {t(featured.title, locale)}
                       </Link>
                     </h2>
-                    <p className="mt-2 text-body-sm text-white/70 max-w-lg line-clamp-2">
+                    <p className="mt-2 max-w-lg text-body-sm leading-7 text-white/65 line-clamp-2">
                       {t(featured.excerpt, locale)}
                     </p>
-                    {featured.author && (
-                      <div className="mt-4 flex items-center gap-2">
-                        <span className="relative h-8 w-8 overflow-hidden rounded-full border border-white/20">
-                          <Image src={featured.author.avatar} alt="" fill sizes="32px" className="object-cover" />
-                        </span>
-                        <span className="text-caption text-white/60">
-                          {d.common.author}: {t(featured.author.name, locale)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="mt-5 flex flex-wrap items-center gap-4">
+                    <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/10 pt-4">
                       <Link
                         href={href(locale, `/academy/${featured.slug}`)}
-                        className="inline-flex items-center gap-2 border-b border-white/40 pb-0.5 text-sm font-medium transition-colors hover:border-white"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-white transition-colors hover:text-[#e4cba4]"
                       >
                         {isFA ? "مشاهده دوره" : "View course"}
                         <ArrowUpRight className="h-4 w-4 rtl-flip arrow-shift" />
                       </Link>
-                      <span className="text-caption text-white/50 tabular">
+                      <span className="text-caption text-white/45 tabular">
                         {n(featuredStats?.lessons ?? 0)} {isFA ? "درس" : "lessons"} ·{" "}
                         {formatDuration(lessonMinutes(featured), locale, d.common)}
                       </span>
+                      {featured.author && (
+                        <span className="ms-auto inline-flex items-center gap-2 text-caption text-white/50">
+                          <span className="relative h-6 w-6 overflow-hidden rounded-full border border-white/20">
+                            <Image src={featured.author.avatar} alt="" fill sizes="24px" className="object-cover" />
+                          </span>
+                          {t(featured.author.name, locale)}
+                        </span>
+                      )}
                     </div>
                   </AcademyHeroPreview>
-                </Reveal>
+                </div>
               </div>
             )}
           </div>
+
+          {/* Slim fact rail — replaces the chip grid the hero used to carry */}
+          <ul className="mt-2 grid gap-x-8 gap-y-3 border-t border-white/12 pt-5 sm:grid-cols-2 lg:grid-cols-4">
+            {perks.map(({ icon: Icon, label, desc }) => (
+              <li key={label} className="flex items-start gap-2.5">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                  <Icon className="h-3.5 w-3.5 text-[#e4cba4]" />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-medium text-white/90">{label}</span>
+                  <span className="block text-[11px] leading-5 text-white/45">{desc}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -425,6 +440,7 @@ export default async function AcademyPage({
       </div>
 
       {/* The main catalogue is the first substantive section after the hero: webinars, then workshops, then recorded courses. */}
+      <div id="courses" className="scroll-mt-[calc(var(--header-h)+1rem)]">
       <AcademyClient
         items={clientItems}
         liveEvent={liveEvent}
@@ -434,6 +450,7 @@ export default async function AcademyPage({
         itemStats={stats.bySlug}
         instructorStats={stats.instructorStats}
       />
+      </div>
 
       {/* ── What you'll learn (3-col feature cards) ───────────── */}
       <section className="container-x py-16">
