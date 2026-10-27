@@ -33,6 +33,7 @@ import { enrichPortfolio } from "@/lib/data/queries";
 import { isPublishedPortfolio, isStudioPortfolio } from "@/lib/artist/portfolio";
 import { getCspNonce } from "@/lib/security/nonce";
 import { getEditableRouteMetadata } from "@/lib/site-seo";
+import { heroSlides, isSectionVisible, resolvePages } from "@/lib/page-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +62,14 @@ export default async function AcademyPage({
   const d = dictionaries[locale];
   const isFA = locale === "fa";
   const academyBanners = site.banners.filter((banner) => banner.enabled && banner.placement === "academy");
+  /* Page control panel: hero sequence, copy overrides and per-section visibility. */
+  const pages = resolvePages(site.pages);
+  const academySlides = heroSlides(pages, "academy", locale);
+  const show = (id: string) => isSectionVisible(pages, "academy", id);
+  /* Copy overrides from the panel; empty values keep the built-in headline. */
+  const heroEyebrowOverride = (locale === "fa" ? pages.academy.hero.eyebrowFa : pages.academy.hero.eyebrowEn) ?? "";
+  const heroTitleOverride = (locale === "fa" ? pages.academy.hero.titleFa : pages.academy.hero.titleEn) ?? "";
+  const heroSubtitleOverride = (locale === "fa" ? pages.academy.hero.subtitleFa : pages.academy.hero.subtitleEn) ?? "";
   const publishedEducation = publicEducationItems(site.education);
 
   const [all, reservations, session] = await Promise.all([
@@ -255,15 +264,11 @@ export default async function AcademyPage({
         {/* Four frames from the school's own material: ornament, the making,
             a repeat study, and a finished colourway. */}
         <CinematicBackdrop
-          slides={[
-            { src: "/images/education/e04.jpg", caption: isFA ? "نقش و تزئین" : "Ornament" },
-            { src: "/images/portfolios/razieh-textile-process.jpg", caption: isFA ? "کارگاه ساخت" : "In the making" },
-            { src: "/images/education/e02.jpg", caption: isFA ? "مطالعهٔ تکرار" : "Repeat study" },
-            { src: "/images/hero/hero-preview-02.jpg", caption: isFA ? "رنگ‌بندی نهایی" : "Colourway" },
-          ]}
+          slides={academySlides.length ? academySlides : [{ src: "/images/education/e04.jpg" }]}
           scrim="light"
+          tint={pages.academy.hero.scrim}
           priority
-          interval={7500}
+          interval={pages.academy.hero.intervalMs > 0 ? pages.academy.hero.intervalMs : 7500}
         />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(75%_55%_at_80%_0%,rgba(201,162,39,0.16)_0%,rgba(12,16,24,0)_60%)]" />
 
@@ -279,11 +284,13 @@ export default async function AcademyPage({
             <div className="min-w-0 lg:col-span-5">
               <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-[#d6bc8e]">
                 <GraduationCap className="h-3.5 w-3.5" />
-                {d.nav.education}
+                {heroEyebrowOverride || d.nav.education}
               </span>
 
               <h1 className="anim-blur-in mt-5 font-display text-[clamp(2rem,6.6vw,4.1rem)] leading-[1.16] text-white">
-                {isFA ? (
+                {heroTitleOverride ? (
+                  heroTitleOverride
+                ) : isFA ? (
                   <>
                     آکادمی آتلیه رزی
                     <span className="mt-1 block text-[#e4cba4]">یاد بگیر، بساز، بفروش.</span>
@@ -300,9 +307,10 @@ export default async function AcademyPage({
                 className="anim-blur-in mt-5 max-w-[44ch] text-[15px] leading-8 text-white/70 md:text-base"
                 style={{ animationDelay: "80ms" }}
               >
-                {isFA
-                  ? "دوره‌های تخصصی طراحی پترن، ورکشاپ‌های زنده و وبینارهای حرفه‌ای — از مبانی تا عرضه بین‌المللی."
-                  : "Specialist pattern design courses, live workshops and professional webinars — from foundations to international publishing."}
+                {heroSubtitleOverride ||
+                  (isFA
+                    ? "دوره‌های تخصصی طراحی پترن، ورکشاپ‌های زنده و وبینارهای حرفه‌ای — از مبانی تا عرضه بین‌المللی."
+                    : "Specialist pattern design courses, live workshops and professional webinars — from foundations to international publishing.")}
               </p>
 
               <div className="anim-fade-up mt-7 flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-3" style={{ animationDelay: "160ms" }}>
@@ -412,7 +420,7 @@ export default async function AcademyPage({
       </section>
 
       {/* ── Categories strip ──────────────────────────────────── */}
-      {cats.length > 0 && (
+      {show("categories") && cats.length > 0 && (
         <div className="border-b border-border bg-background-secondary">
           <div className="container-x">
             <div className="flex items-center gap-3 overflow-x-auto py-4 no-scrollbar">
@@ -434,7 +442,7 @@ export default async function AcademyPage({
       )}
 
       {/* ── What you get trust bar — only what the academy actually provides ── */}
-      <div className="bg-accent text-white">
+      {show("trust") && <div className="bg-accent text-white">
         <div className="container-x">
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-3 py-4 text-sm">
             {[
@@ -449,10 +457,10 @@ export default async function AcademyPage({
             ))}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* The main catalogue is the first substantive section after the hero: webinars, then workshops, then recorded courses. */}
-      <div id="courses" className="scroll-mt-[calc(var(--header-h)+1rem)]">
+      {show("catalogue") && <div id="courses" className="scroll-mt-[calc(var(--header-h)+1rem)]">
       <AcademyClient
         items={clientItems}
         liveEvent={liveEvent}
@@ -462,10 +470,10 @@ export default async function AcademyPage({
         itemStats={stats.bySlug}
         instructorStats={stats.instructorStats}
       />
-      </div>
+      </div>}
 
       {/* ── What you'll learn (3-col feature cards) ───────────── */}
-      <section className="container-x py-16">
+      {show("learn") && <section className="container-x py-16">
         <SectionHeader
           eyebrow={isFA ? "چرا آکادمی آتلیه رزی" : "Why Rosie Atelier Academy"}
           title={isFA ? "هر آنچه نیاز داری در یک جا" : "Everything you need in one place"}
@@ -492,10 +500,10 @@ export default async function AcademyPage({
             </Reveal>
           ))}
         </div>
-      </section>
+      </section>}
 
       {/* ── Featured course curriculum (real lesson list from the panel) ── */}
-      {featured && featuredLessons.length > 0 && (
+      {show("curriculum") && featured && featuredLessons.length > 0 && (
         <section className="bg-background-secondary">
           <div className="container-x py-16">
             <SectionHeader
@@ -537,7 +545,7 @@ export default async function AcademyPage({
       )}
 
       {/* ── Lesson videos uploaded in the panel ───────────────── */}
-      {galleryEntries.length > 0 && (
+      {show("videos") && galleryEntries.length > 0 && (
         <section className="container-x py-16">
           <SectionHeader
             eyebrow={isFA ? "ویدیوهای آکادمی" : "Academy videos"}
@@ -553,7 +561,7 @@ export default async function AcademyPage({
       )}
 
       {/* ── Bridge to the portfolio ───────────────────────────── */}
-      {worksPreview.length > 0 && (
+      {show("portfolio") && worksPreview.length > 0 && (
         <section className="container-x py-16">
           <SectionHeader
             eyebrow={isFA ? "پورتفولیوی آتلیه" : "Studio portfolio"}
@@ -579,10 +587,12 @@ export default async function AcademyPage({
       )}
 
       {/* ── Student quotes (admin-managed; hidden until real ones exist) ── */}
-      <Testimonials testimonials={site.testimonials} locale={locale} className="container-x py-16" />
+      {show("testimonials") && (
+        <Testimonials testimonials={site.testimonials} locale={locale} className="container-x py-16" />
+      )}
 
       {/* ── Process steps ─────────────────────────────────────── */}
-      <section className="bg-background-secondary">
+      {show("process") && <section className="bg-background-secondary">
         <div className="container-x py-16">
           <SectionHeader
             eyebrow={isFA ? "چطور کار می‌کند" : "How it works"}
@@ -630,7 +640,7 @@ export default async function AcademyPage({
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
       <StickyCta
         label={isFA ? "از آموزش به آثار واقعی" : "From the course to real work"}

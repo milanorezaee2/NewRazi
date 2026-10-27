@@ -36,18 +36,17 @@ import { mergeSeoEntries, SEO_ROUTE_DEFAULTS } from "@/lib/seo-pages";
 import { ADMIN_LOGIN_DISABLED } from "@/lib/admin-access";
 import { withCsrf } from "@/lib/security/csrf-client";
 import { cn } from "@/lib/utils";
-import type { Banner, PortfolioHeroSettings, SeoMeta, SiteContent } from "@/lib/types";
+import type { Banner, SeoMeta, SiteContent } from "@/lib/types";
 import { formatInvalidContentWriteMessage } from "@/lib/admin-content-issues";
 import type { ContentRelationIssueSummary } from "@/lib/admin-content-issues";
 import type { ProductFamilyReferenceCounts } from "@/lib/product-family-references";
-import { PortfolioHeroManager } from "@/components/admin/PortfolioHeroManager";
+import { PagesManager } from "@/components/admin/PagesManager";
 import { MobileAdminNav } from "@/components/admin/MobileAdminNav";
-import { portfolioHero as defaultPortfolioHero } from "@/lib/data/seed";
 import type { Localized } from "@/lib/i18n/types";
 
 type Section =
   | "dashboard"
-  | "portfolio-hero"
+  | "pages"
   | "portfolios"
   | "education"
   | "banners"
@@ -148,7 +147,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: "education", label: "آکادمی", icon: <BookOpen className="h-4 w-4" /> },
       { id: "portfolios", label: "پورتفولیو", icon: <GalleryHorizontalEnd className="h-4 w-4" /> },
-      { id: "portfolio-hero", label: "هیرو پورتفولیو", icon: <Monitor className="h-4 w-4" /> },
+      { id: "pages", label: "مدیریت صفحه‌ها", icon: <Monitor className="h-4 w-4" /> },
       { id: "banners", label: "بنرهای آکادمی", icon: <Sparkles className="h-4 w-4" /> },
     ],
   },
@@ -581,11 +580,8 @@ export function AdminApp() {
               {section === "dashboard" && (
                 <OverviewDashboard data={data} setSection={setSection} />
               )}
-              {section === "portfolio-hero" && (
-                <PortfolioHeroManager
-                  settings={data.portfolioHero ?? defaultPortfolioHero}
-                  onChange={(portfolioHero: PortfolioHeroSettings) => update({ portfolioHero })}
-                />
+              {section === "pages" && (
+                <PagesManager data={data} update={update} locale={locale} />
               )}
               {section === "portfolios" && (
                 <PortfoliosManager data={data} update={update} locale={locale} />

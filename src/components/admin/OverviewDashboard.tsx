@@ -6,7 +6,7 @@ import { publicEducationItems } from "@/lib/academy/publication";
 import { isPublishedPortfolio, isStudioPortfolio } from "@/lib/artist/portfolio";
 import { cn } from "@/lib/utils";
 
-type DashboardSection = "education" | "portfolios" | "portfolio-hero" | "banners" | "seo";
+type DashboardSection = "education" | "portfolios" | "pages" | "banners" | "seo";
 
 /**
  * Overview of the two public pages that remain: the academy and the portfolio.
@@ -103,7 +103,7 @@ export function OverviewDashboard({
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          { key: "portfolio-hero" as const, icon: <ImageIcon className="h-4 w-4" />, label: "هیرو پورتفولیو" },
+          { key: "pages" as const, icon: <ImageIcon className="h-4 w-4" />, label: "مدیریت صفحه‌ها" },
           { key: "banners" as const, icon: <Sparkles className="h-4 w-4" />, label: "بنرهای آکادمی" },
           { key: "seo" as const, icon: <Radio className="h-4 w-4" />, label: "متادیتای صفحه‌ها" },
         ].map((item) => (

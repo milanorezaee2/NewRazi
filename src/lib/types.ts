@@ -726,6 +726,8 @@ export interface SiteContent {
   portfolioHero?: PortfolioHeroSettings;
   /** نظرات هنرجویان — فقط وقتی مدیر آکادمی چیزی اضافه کند نمایش داده می‌شود */
   testimonials?: Testimonial[];
+  /** کنترل صفحه‌ها (هیرو سینمایی و ترتیب/نمایش بخش‌ها) — فقط از پنل مدیریت */
+  pages?: Partial<import("@/lib/page-settings").PagesSettings>;
 }
 
 export type CollectionKey = Exclude<keyof SiteContent, "hero">;

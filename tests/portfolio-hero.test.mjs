@@ -5,7 +5,7 @@ import fs from 'node:fs';
 test('studio portfolio uses its own media hero and retains its introduction and works', () => {
   const page = fs.readFileSync('src/app/[locale]/portfolio/page.tsx', 'utf8');
   assert.match(page, /<PortfolioHero\s/);
-  assert.match(page, /<PortfolioIntro locale=\{locale\} \/>/);
+  assert.match(page, /<PortfolioIntro key="intro" locale=\{locale\} \/>/);
   assert.match(page, /id="works"/);
   assert.doesNotMatch(page, /<PageHero\s/);
   assert.match(page, /artist-razieh-khairipour/);

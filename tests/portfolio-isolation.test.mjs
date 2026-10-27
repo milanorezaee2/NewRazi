@@ -57,7 +57,7 @@ test("artist routes never point to the studio portfolio", () => {
 });
 test("restored studio intro is not fed artist-directory content", () => {
   const page = fs.readFileSync("src/app/[locale]/portfolio/page.tsx", "utf8");
-  assert.match(page, /<PortfolioIntro locale=\{locale\} \/>/);
+  assert.match(page, /<PortfolioIntro key="intro" locale=\{locale\} \/>/);
   assert.doesNotMatch(
     page,
     /founderStatistics|ArtistsHubView|ProfileHeader|ProfileTabs/,

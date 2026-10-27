@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { seedContent } from "./seed";
 import type { CollectionKey, Portfolio, SiteContent } from "../types";
 import { rewriteLegacyMediaUrls } from "@/lib/media-storage";
+import { resolvePages } from "@/lib/page-settings";
 import { backfillLegacyPatternStatuses } from "../pattern-status";
 import { RAZIEH_TEXTILE_CATEGORY, RAZIEH_TEXTILE_PORTFOLIO } from "./razieh-textile-portfolio";
 
@@ -314,6 +315,8 @@ function prepareContent(content: SiteContent): SiteContent {
     patterns: backfillLegacyPatternStatuses(normalized.patterns ?? []),
     /* New optional collections default to an empty list rather than `undefined`. */
     testimonials: Array.isArray(normalized.testimonials) ? normalized.testimonials : [],
+    /* Page control always resolves to a complete document with shipped defaults. */
+    pages: resolvePages(normalized.pages),
     portfolios: backfillSeedCaseStudies(normalized.portfolios ?? []),
   });
 }

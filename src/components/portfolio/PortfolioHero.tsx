@@ -13,6 +13,12 @@ interface Props {
   background: string;
   /** The photographic sequence behind the headline (3–4 related frames). */
   slides?: CinematicSlide[];
+  /** Auto-advance in ms (0 = still). */
+  intervalMs?: number;
+  /** Legibility scrim strength, 0–100. */
+  scrim?: number;
+  /** Copy overrides from the page manager; empty values keep the CMS defaults. */
+  copy?: { eyebrow?: string; titleFa?: string; titleEn?: string; subtitle?: string };
   video: { src: string; poster: string };
   instructor: { name: Localized; profession: Localized; avatar?: string };
   /** تنظیمات ظاهری از CMS — اگر ارسال نشود مقادیر پیش‌فرض استفاده می‌شود */
@@ -36,14 +42,16 @@ function cardClassName(style: PortfolioHeroSettings["instructorCardStyle"]): str
  * the end side, and the photograph kept as a dimmed backdrop so the typography —
  * not the photo — carries the page.
  */
-export function PortfolioHero({ locale, background, slides, video, instructor, settings }: Props) {
+export function PortfolioHero({ locale, background, slides, intervalMs, scrim, copy, video, instructor, settings }: Props) {
   const fa = locale === "fa";
   const cfg = { ...defaultSettings, ...settings };
 
-  const eyebrow = fa ? cfg.eyebrowFa : cfg.eyebrowEn;
-  const titleLine1 = fa ? cfg.titleLine1Fa : cfg.titleLine1En;
-  const titleLine2 = fa ? cfg.titleLine2Fa : cfg.titleLine2En;
-  const desc = fa ? cfg.descFa : cfg.descEn;
+  /* Page-manager copy wins; otherwise the CMS hero text; otherwise the seed. */
+  const eyebrow = copy?.eyebrow || (fa ? cfg.eyebrowFa : cfg.eyebrowEn);
+  const titleOverride = copy?.titleFa || copy?.titleEn;
+  const titleLine1 = titleOverride || (fa ? cfg.titleLine1Fa : cfg.titleLine1En);
+  const titleLine2 = titleOverride ? "" : (fa ? cfg.titleLine2Fa : cfg.titleLine2En);
+  const desc = copy?.subtitle || (fa ? cfg.descFa : cfg.descEn);
 
   const avatarClass = cfg.instructorAvatarShape === "circle" ? "rounded-full" : "rounded-2xl";
   const avatarSize =
@@ -62,8 +70,9 @@ export function PortfolioHero({ locale, background, slides, video, instructor, s
       <CinematicBackdrop
         slides={slides?.length ? slides : [{ src: background }]}
         scrim="light"
+        tint={scrim}
         priority
-        interval={7000}
+        interval={intervalMs && intervalMs > 0 ? intervalMs : 7000}
       />
       {/* Seam rule: where the plate begins on desktop */}
       <div
@@ -100,7 +109,7 @@ export function PortfolioHero({ locale, background, slides, video, instructor, s
 
             <h1 className="mt-5 font-display text-[clamp(2.05rem,7.4vw,4.9rem)] leading-[1.16] tracking-tight md:mt-6 md:leading-[1.14]">
               <span className="block">{titleLine1}</span>
-              <span className="mt-1 block text-[#e4cba4]">{titleLine2}</span>
+              {titleLine2 && <span className="mt-1 block text-[#e4cba4]">{titleLine2}</span>}
             </h1>
 
             <p className="mt-5 max-w-[46ch] text-[15px] leading-8 text-white/70 md:mt-6 md:text-base">{desc}</p>
