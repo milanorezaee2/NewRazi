@@ -55,6 +55,14 @@ export default async function PortfolioPage({
       <PortfolioHero
         locale={locale}
         background="/images/hero/hero-back.webp"
+        /* Four related frames: a realised interior, a wallpapered room, the
+           material itself, and the drawing table behind both. */
+        slides={[
+          { src: "/images/portfolios/hero-01.jpg", caption: locale === "fa" ? "مجموعهٔ مسکونی" : "Residential" },
+          { src: "/images/portfolios/pf-bedroom.jpg", caption: locale === "fa" ? "کاغذدیواری سفارشی" : "Bespoke wallpaper" },
+          { src: "/images/portfolios/hero-02.jpg", caption: locale === "fa" ? "پارچه و پرده" : "Textile & drapery" },
+          { src: "/images/portfolios/hero-03.jpg", caption: locale === "fa" ? "میز طراحی" : "The drawing table" },
+        ]}
         video={{ src: "/videos/academy/preview.mp4", poster: "/images/portfolios/pf-process.jpg" }}
         instructor={{
           name: instructor?.name ?? RAZIEH_PROFILE.name,

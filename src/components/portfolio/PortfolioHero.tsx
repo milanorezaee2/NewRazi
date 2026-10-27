@@ -1,5 +1,6 @@
 import Image from "@/components/ui/SiteImage";
 import { ArrowDown, ArrowUpRight, UserRound } from "lucide-react";
+import { CinematicBackdrop, type CinematicSlide } from "@/components/ui/CinematicBackdrop";
 import { PortfolioHeroVideo } from "./PortfolioHeroVideo";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import type { Locale, Localized } from "@/lib/i18n/types";
@@ -10,14 +11,13 @@ import { href, t } from "@/lib/utils";
 interface Props {
   locale: Locale;
   background: string;
+  /** The photographic sequence behind the headline (3–4 related frames). */
+  slides?: CinematicSlide[];
   video: { src: string; poster: string };
   instructor: { name: Localized; profession: Localized; avatar?: string };
   /** تنظیمات ظاهری از CMS — اگر ارسال نشود مقادیر پیش‌فرض استفاده می‌شود */
   settings?: PortfolioHeroSettings;
 }
-
-const GOLD = "#e4cba4";
-const GOLD_MUTED = "#d6bc8e";
 
 /** ── کلاس‌های پویای کارت مدرس بر اساس استایل انتخاب‌شده در پنل ── */
 function cardClassName(style: PortfolioHeroSettings["instructorCardStyle"]): string {
@@ -36,7 +36,7 @@ function cardClassName(style: PortfolioHeroSettings["instructorCardStyle"]): str
  * the end side, and the photograph kept as a dimmed backdrop so the typography —
  * not the photo — carries the page.
  */
-export function PortfolioHero({ locale, background, video, instructor, settings }: Props) {
+export function PortfolioHero({ locale, background, slides, video, instructor, settings }: Props) {
   const fa = locale === "fa";
   const cfg = { ...defaultSettings, ...settings };
 
@@ -58,25 +58,20 @@ export function PortfolioHero({ locale, background, video, instructor, settings 
 
   return (
     <section data-portfolio-hero className="relative isolate overflow-hidden bg-[#0d1512] text-white">
-      {/* ── Backdrop: the studio photograph, held well behind the type ── */}
-      <Image
-        src={background}
-        alt=""
-        fill
+      {/* ── Backdrop: a short sequence of related photographs ── */}
+      <CinematicBackdrop
+        slides={slides?.length ? slides : [{ src: background }]}
+        scrim="light"
         priority
-        sizes="100vw"
-        className="pointer-events-none scale-[1.04] object-cover object-center opacity-40 md:opacity-50"
+        interval={7000}
       />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(115%_90%_at_10%_0%,rgba(13,21,18,0.55)_0%,rgba(13,21,18,0.94)_58%,rgba(13,21,18,0.99)_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0d1512] via-[#0d1512]/60 to-transparent" />
-      <div aria-hidden className="hero-grain pointer-events-none absolute inset-0" />
       {/* Seam rule: where the plate begins on desktop */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-y-6 end-[7%] hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent lg:block"
       />
 
-      <div className="container-x relative pb-7 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-9 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
+      <div className="container-x relative pb-14 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-16 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
         {/* ── Top rail ── */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/12 pb-4">
           <Breadcrumb

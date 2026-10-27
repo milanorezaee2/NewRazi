@@ -687,6 +687,19 @@ html[data-theme="dark"] .hero-grain {
   opacity: 0.1;
 }
 
+/* Slow cinematic push for hero photographs (one pass per frame). */
+@keyframes ra-kenburns {
+  from { transform: scale(1.02); }
+  to   { transform: scale(1.09); }
+}
+.hero-kenburns {
+  animation: ra-kenburns 9s ease-out both;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-kenburns { animation: none; transform: none; }
+}
+
 /* ---------- Interaction primitives --------------------------------------- */
 @utility img-zoom {
   transition: transform 900ms var(--ease-out);

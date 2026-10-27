@@ -23,6 +23,7 @@ import type { Locale } from "@/lib/i18n/types";
 import { faNum, formatDuration, href, t } from "@/lib/utils";
 import { AcademyClient, type AcademyClientItem } from "./AcademyClient";
 import { AcademyHeroPreview } from "@/components/academy/AcademyHeroPreview";
+import { CinematicBackdrop } from "@/components/ui/CinematicBackdrop";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { SiteContentBanner } from "@/components/layout/SiteContentBanner";
 import { Testimonials } from "@/components/academy/Testimonials";
@@ -251,11 +252,22 @@ export default async function AcademyPage({
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden bg-[#0c1018] text-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(85%_65%_at_78%_0%,rgba(201,162,39,0.18)_0%,rgba(12,16,24,0)_62%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0c1018] via-[#0c1018]/70 to-transparent" />
-        <div aria-hidden className="hero-grain pointer-events-none absolute inset-0" />
+        {/* Four frames from the school's own material: ornament, the making,
+            a repeat study, and a finished colourway. */}
+        <CinematicBackdrop
+          slides={[
+            { src: "/images/education/e04.jpg", caption: isFA ? "نقش و تزئین" : "Ornament" },
+            { src: "/images/portfolios/razieh-textile-process.jpg", caption: isFA ? "کارگاه ساخت" : "In the making" },
+            { src: "/images/education/e02.jpg", caption: isFA ? "مطالعهٔ تکرار" : "Repeat study" },
+            { src: "/images/hero/hero-preview-02.jpg", caption: isFA ? "رنگ‌بندی نهایی" : "Colourway" },
+          ]}
+          scrim="light"
+          priority
+          interval={7500}
+        />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(75%_55%_at_80%_0%,rgba(201,162,39,0.16)_0%,rgba(12,16,24,0)_60%)]" />
 
-        <div className="container-x relative z-10 pb-12 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-16 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
+        <div className="container-x relative z-10 pb-16 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-20 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
           {/* Rail */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/12 pb-4 text-[10px] tracking-[0.26em] text-white/40" dir="ltr">
             <span>ROSIE ATELIER — ACADEMY</span>
