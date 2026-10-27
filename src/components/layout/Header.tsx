@@ -69,9 +69,10 @@ export function Header() {
   const otherLocale = locale === "fa" ? "en" : "fa";
   const switchHref = pathname.replace(new RegExp(`^/${locale}`), `/${otherLocale}`) || `/${otherLocale}`;
 
+  /* Portfolio leads: it introduces the studio, the academy is the next step. */
   const links: { key: string; label: string; href: string }[] = [
-    { key: "academy", label: dict.nav.education, href: href(locale, "/academy") },
     { key: "portfolio", label: dict.nav.portfolio, href: href(locale, "/portfolio") },
+    { key: "academy", label: dict.nav.education, href: href(locale, "/academy") },
   ];
 
   return (
@@ -88,7 +89,7 @@ export function Header() {
             scrolled ? "h-14 sm:h-[var(--header-h-compact)]" : "h-16 sm:h-[var(--header-h)]",
           )}
         >
-          <Link href={href(locale, "/academy")} className="flex items-center shrink-0 group" aria-label={dict.brand}>
+          <Link href={href(locale, "/portfolio")} className="flex items-center shrink-0 group" aria-label={dict.brand}>
             <Logo
               className={cn(
                 "text-[17px] transition-opacity duration-300 group-hover:opacity-75",

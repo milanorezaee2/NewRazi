@@ -10,8 +10,8 @@ const l = (fa: string, en: string): Localized => ({ fa, en });
 
 /** Public, stable routes whose metadata is managed by the main admin SEO tab. */
 export const SEO_ROUTE_DEFAULTS: readonly SeoRouteDefinition[] = [
-  { path: "/academy", label: "آکادمی", title: l("آکادمی — آتلیه رزی", "Academy — Rosie Atelier"), description: l("آموزش طراحی پترن از مبانی تا کاغذدیواری و پارچه؛ دوره‌ها، کارگاه‌ها و رویدادهای زنده.", "Pattern design education from foundations to wallpaper and textile: courses, workshops and live events.") },
   { path: "/portfolio", label: "پورتفولیو", title: l("پورتفولیو — آتلیه رزی", "Portfolio — Rosie Atelier"), description: l("آثار منتخب و روایت‌های طراحی راضیه خیری‌پور: پترن، پارچه، رنگ و فضا.", "Selected works and design stories by Razieh Kheiripour: pattern, textile, colour and space.") },
+  { path: "/academy", label: "آکادمی", title: l("آکادمی — آتلیه رزی", "Academy — Rosie Atelier"), description: l("آموزش طراحی پترن از مبانی تا کاغذدیواری و پارچه؛ دوره‌ها، کارگاه‌ها و رویدادهای زنده.", "Pattern design education from foundations to wallpaper and textile: courses, workshops and live events.") },
 ];
 
 const DEFAULTS_BY_PATH = new Map(SEO_ROUTE_DEFAULTS.map((route) => [route.path, route]));

@@ -74,8 +74,21 @@ export async function middleware(req: NextRequest) {
     const cookie = req.cookies.get("ra-locale")?.value;
     const locale = LOCALES.includes(cookie as never) ? cookie : DEFAULT_LOCALE;
     const url = req.nextUrl.clone();
-    url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
+    // The site's front door is the portfolio, so "/" lands there in one hop.
+    url.pathname = `/${locale}${pathname === "/" ? "/portfolio" : pathname}`;
     return applySecurityHeaders(req, NextResponse.redirect(url), nonce);
+  }
+
+  /*
+   * The portfolio is the homepage of the two-page site. A bare locale root
+   * (/fa, /en) answers with a real HTTP redirect instead of rendering a page
+   * that only bounces the browser client-side.
+   */
+  const bareLocalePath = pathname.replace(/\/+$/, "");
+  if (LOCALES.some((locale) => bareLocalePath === `/${locale}`)) {
+    const url = req.nextUrl.clone();
+    url.pathname = `${bareLocalePath}/portfolio`;
+    return applySecurityHeaders(req, NextResponse.redirect(url, 308), nonce);
   }
 
   return res;

@@ -4,17 +4,20 @@ A bilingual (فارسی RTL / English LTR) Next.js 15 site with exactly **two pu
 
 | Page | Route | Content |
 | --- | --- | --- |
-| آکادمی / Academy | `/[locale]/academy` (+ `/[locale]/academy/[slug]`, `/live`, `/broadcast`) | courses, workshops, live events, lessons, enrollment |
-| پورتفولیو / Portfolio | `/[locale]/portfolio` (+ `/[locale]/portfolio/[slug]`) | studio works, gallery, founder introduction, collaboration |
+| پورتفولیو / Portfolio — **homepage** | `/[locale]/portfolio` (+ `/[locale]/portfolio/[slug]`) | studio works, gallery, founder introduction, course bridge, collaboration |
+| آکادمی / Academy | `/[locale]/academy` (+ `/[locale]/academy/[slug]`, `/live`, `/broadcast`) | courses, workshops, live events, lessons, enrollment, works bridge |
 
-`/[locale]` redirects to `/[locale]/academy`. Locale handling (`fa` | `en`) is unchanged, and the
-visitor auth pages (`/[locale]/login`, `/[locale]/signup`) remain because paid live-event access and
-the e-mail-code flow need an account.
+`/` and `/[locale]` redirect to the portfolio: the work introduces the studio, the academy is the
+next step. The two pages link to each other (a course block on the portfolio, a works block on the
+academy). Locale handling (`fa` | `en`) is unchanged, and the visitor auth pages (`/[locale]/login`,
+`/[locale]/signup`) remain because paid live-event access and the e-mail-code flow need an account.
 
 > **Removed in the two-page redesign:** the shop, patterns, collections, styles, spaces, stories,
 > projects, custom production, artists directory, artist dashboards, digital marketplace, checkout,
-> licences, favourites, account area, owner pages, contact/newsletter forms and live chat. Their
-> routes now return 404, and the matching admin sections, APIs, components and libraries were deleted.
+> licences, favourites, account area, owner pages, contact/newsletter forms and live chat. The
+> matching admin sections, APIs, components and libraries were deleted, and every retired public
+> route now answers with a permanent **301** to the closest surviving page (see `next.config.ts`).
+> Anything else lands on the 404 page, which offers the two remaining destinations.
 > The content model (`src/lib/types.ts`) still carries the old collections so existing
 > `data/content.json` files keep validating; they are simply no longer rendered or edited.
 

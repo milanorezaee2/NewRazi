@@ -5,11 +5,16 @@ import { PortfolioHero } from "@/components/portfolio/PortfolioHero";
 import { RAZIEH_PROFILE } from "@/lib/razieh-profile";
 import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
 import { PortfolioCollaboration, PortfolioIntro } from "@/components/portfolio/PortfolioIntro";
-import { enrichPortfolio, getSite } from "@/lib/data/queries";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { Reveal } from "@/components/ui/Reveal";
+import { EducationCard } from "@/components/cards/EducationCard";
+import { publicEducationItems } from "@/lib/academy/publication";
+import { enrichEducation, enrichPortfolio, getSite } from "@/lib/data/queries";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import type { Locale } from "@/lib/i18n/types";
 import { getUsedPortfolioCategories } from "@/lib/portfolio-categories";
 import { getEditableRouteMetadata } from "@/lib/site-seo";
+import { href } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +29,14 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
   const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const items = site.portfolios.map((p) => enrichPortfolio(site, p));
   const categories = getUsedPortfolioCategories(site);
+
+  /* Courses shown at the end of the gallery: featured first, then popular ones. */
+  const education = publicEducationItems(content.education).map((item) => enrichEducation(content, item));
+  const academyItems = [
+    ...education.filter((item) => item.featured),
+    ...education.filter((item) => !item.featured && item.popular),
+    ...education.filter((item) => !item.featured && !item.popular),
+  ].slice(0, 3);
 
   // Studio-specific media; never use an artist portfolio's first item as the hero.
   const instructor = site.artists.find(artist => artist.id === "artist-razieh-khairipour");
@@ -83,6 +96,32 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
           <PortfolioGrid items={items} categories={categories} />
         </Suspense>
       </section>
+
+      {/* Bridge to the academy — the second public page */}
+      {academyItems.length > 0 && (
+        <section className="bg-background-secondary">
+          <div className="container-x section-y">
+            <SectionHeader
+              eyebrow={locale === "fa" ? "آکادمی آتلیه رزی" : "Rosie Atelier Academy"}
+              title={locale === "fa" ? "این تکنیک‌ها را در آکادمی یاد بگیرید" : "Learn these techniques at the academy"}
+              description={
+                locale === "fa"
+                  ? "همان روش‌هایی که پشت این آثار است — از طراحی موتیف و تکرار بی‌درز تا رنگ و مقیاس برای کاغذدیواری و پارچه — در قالب دوره، کارگاه و رویداد زنده."
+                  : "The same methods behind these works — motif design, seamless repeats, colour and scale for wallpaper and textile — as courses, workshops and live events."
+              }
+              href={href(locale, "/academy")}
+              hrefLabel={locale === "fa" ? "همه دوره‌های آکادمی" : "All academy courses"}
+            />
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {academyItems.map((item, index) => (
+                <Reveal key={item.id} delay={index * 70}>
+                  <EducationCard item={item} />
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Closing band — the ways to work with the atelier */}
       <PortfolioCollaboration locale={locale} />

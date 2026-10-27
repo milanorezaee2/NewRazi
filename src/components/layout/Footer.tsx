@@ -28,8 +28,8 @@ export function Footer() {
   ];
 
   const pages = [
-    { label: dict.nav.education, path: "/academy" },
     { label: dict.nav.portfolio, path: "/portfolio" },
+    { label: dict.nav.education, path: "/academy" },
     { label: dict.nav.login, path: "/login" },
   ];
 

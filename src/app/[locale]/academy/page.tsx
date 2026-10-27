@@ -25,6 +25,9 @@ import { AcademyClient, type AcademyClientItem } from "./AcademyClient";
 import { AcademyHeroPreview } from "@/components/academy/AcademyHeroPreview";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { SiteContentBanner } from "@/components/layout/SiteContentBanner";
+import { PortfolioCard } from "@/components/cards/PortfolioCard";
+import { enrichPortfolio } from "@/lib/data/queries";
+import { isPublishedPortfolio, isStudioPortfolio } from "@/lib/artist/portfolio";
 import { getCspNonce } from "@/lib/security/nonce";
 import { getEditableRouteMetadata } from "@/lib/site-seo";
 
@@ -70,6 +73,15 @@ export default async function AcademyPage({
   });
 
   const featured = all.find((e) => e.featured && e.type === "course") ?? all[0];
+
+  /* Studio works shown at the end of the academy page — the other public page. */
+  const studioWorks = site.portfolios
+    .filter((portfolio) => isStudioPortfolio(portfolio) && isPublishedPortfolio(portfolio))
+    .map((portfolio) => enrichPortfolio(site, portfolio));
+  const worksPreview = [
+    ...studioWorks.filter((work) => work.featured),
+    ...studioWorks.filter((work) => !work.featured),
+  ].slice(0, 3);
 
   /* Hero preview: the video the admin uploaded for the featured course, else the built-in film. */
   const featuredVideo = previewVideoOf(featured);
@@ -506,6 +518,32 @@ export default async function AcademyPage({
             }
           />
           <VideoGrid entries={galleryEntries} poster={featured?.image} />
+        </section>
+      )}
+
+      {/* ── Bridge to the portfolio ───────────────────────────── */}
+      {worksPreview.length > 0 && (
+        <section className="container-x py-16">
+          <SectionHeader
+            eyebrow={isFA ? "پورتفولیوی آتلیه" : "Studio portfolio"}
+            title={isFA ? "نتیجه‌ی این آموزش‌ها در آثار واقعی" : "Where this training ends up — real work"}
+            description={
+              isFA
+                ? "پروژه‌های اجراشده‌ی آتلیه: طراحی پترن، ساخت پارچه، ترکیب رنگ و فضاهایی که با همین روش‌ها ساخته شده‌اند."
+                : "Realised studio projects: pattern design, textile making, colour and spaces built with these very methods."
+            }
+            href={href(locale, "/portfolio")}
+            hrefLabel={isFA ? "دیدن همه آثار" : "See all works"}
+          />
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {worksPreview.map((work, index) => (
+              <Reveal key={work.id} delay={index * 70}>
+                <div className="aspect-[4/3]">
+                  <PortfolioCard item={work} />
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </section>
       )}
 
