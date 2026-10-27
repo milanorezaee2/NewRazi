@@ -501,7 +501,7 @@ function EventRow({
 
 /* ─── Instructor Card ────────────────────────────────────────── */
 function InstructorCard({ item, stat }: { item: AcademyClientItem; stat?: AcademyInstructorStat }) {
-  const { locale, dict } = useLocale();
+  const { locale } = useLocale();
   const isFA = locale === "fa";
   if (!item.author) return null;
 
@@ -519,9 +519,7 @@ function InstructorCard({ item, stat }: { item: AcademyClientItem; stat?: Academ
             : `${stat?.courses ?? 0} courses · ${stat?.events ?? 0} events · ${stat?.lessons ?? 0} lessons`}
         </p>
       </div>
-      <Link href={href(locale, `/artists/${item.author.slug}`)} className="shrink-0 text-caption text-accent hover:underline">
-        {dict.nav.explore}
-      </Link>
+      <span className="shrink-0 text-caption text-muted">{t(item.author.name, locale)}</span>
     </div>
   );
 }
@@ -796,7 +794,7 @@ export function AcademyClient({ items, liveEvent, categories, initialCategory, s
               <Button variant="accent" size="lg" href={href(locale, featuredHref(items))}>
                 {isFA ? "شروع با دوره منتخب" : "Start with the featured course"}
               </Button>
-              <Button variant="glass" size="lg" href={href(locale, "/contact")}>
+              <Button variant="glass" size="lg" href="mailto:hello@rosieatelier.com">
                 {isFA ? "پرسش از آکادمی" : "Ask the academy"}
               </Button>
             </div>

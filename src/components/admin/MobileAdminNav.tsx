@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  CalendarClock,
-  Home,
-  LayoutDashboard,
-  Menu,
-  Palette,
-  Save,
-  ShoppingBag,
-} from "lucide-react";
+import { BookOpen, GalleryHorizontalEnd, LayoutDashboard, Menu, Save, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -25,7 +17,6 @@ export function MobileAdminNav({
   dirty,
   saving,
   onSave,
-  pendingCount,
 }: {
   activeSection: string;
   onSelect: (id: string) => void;
@@ -33,14 +24,12 @@ export function MobileAdminNav({
   dirty: boolean;
   saving: boolean;
   onSave: () => void;
-  pendingCount: number;
 }) {
   const primary: NavItem[] = [
     { id: "dashboard", label: "داشبورد", icon: <LayoutDashboard className="h-5 w-5" /> },
-    { id: "reservations", label: "رزروها", icon: <CalendarClock className="h-5 w-5" /> },
-    { id: "home", label: "خانه", icon: <Home className="h-5 w-5" /> },
-    { id: "patterns", label: "پترن‌ها", icon: <Palette className="h-5 w-5" /> },
-    { id: "buyers", label: "خریداران", icon: <ShoppingBag className="h-5 w-5" /> },
+    { id: "education", label: "آکادمی", icon: <BookOpen className="h-5 w-5" /> },
+    { id: "portfolios", label: "پورتفولیو", icon: <GalleryHorizontalEnd className="h-5 w-5" /> },
+    { id: "banners", label: "بنرها", icon: <Sparkles className="h-5 w-5" /> },
   ];
 
   const isActive = (id: string) => activeSection === id;
@@ -75,16 +64,11 @@ export function MobileAdminNav({
               "relative flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 py-2 transition-colors",
               moreActive ? "text-accent" : "text-foreground-secondary",
             )}
-            aria-label={pendingCount > 0 ? `سایر بخش‌ها؛ ${pendingCount} طراح در انتظار بررسی` : "سایر بخش‌ها"}
+            aria-label="سایر بخش‌ها"
             aria-haspopup="true"
           >
             <Menu className="h-5 w-5" />
             <span className="text-[10px] font-medium leading-tight">بیشتر</span>
-            {pendingCount > 0 && (
-              <span className="absolute top-1 right-1/2 translate-x-3 rounded-full bg-amber-400 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                {pendingCount}
-              </span>
-            )}
           </button>
         </div>
       </nav>

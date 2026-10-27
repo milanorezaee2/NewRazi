@@ -12,7 +12,6 @@ import { GoogleButton } from "./GoogleButton";
 import { EmailCodeForm } from "./EmailCodeForm";
 import { sessionCookieWorks } from "@/lib/auth/session-client";
 import { SESSION_FETCH } from "@/lib/http";
-import { RolePicker } from "./RolePicker";
 import { href } from "@/lib/utils";
 
 interface AuthFormProps {
@@ -60,13 +59,14 @@ const ERROR_MESSAGES: Record<string, { fa: string; en: string }> = {
   google_no_account: { fa: "حسابی با این ایمیل وجود ندارد؛ ابتدا ثبت‌نام کنید.", en: "No account exists for this e-mail yet — please sign up first." },
 };
 
-export function AuthForm({ mode, defaultRole, onSignupSuccess, prefill, autoSubmitting }: AuthFormProps) {
+export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: AuthFormProps) {
   const { locale, dict } = useLocale();
   const { login, signup } = useAuth();
   const router = useRouter();
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
-  const [role, setRole] = useState<"user" | "artist">(defaultRole ?? "user");
+  /* only visitor accounts exist now: the artist/seller programme was removed */
+  const role = "user" as const;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -160,8 +160,7 @@ export function AuthForm({ mode, defaultRole, onSignupSuccess, prefill, autoSubm
       setBusy(false);
       if (!r.ok) return setErr(getError(r.error ?? "invalid"));
       if (!(await sessionCookieWorks())) return setErr(getError("session_cookie_blocked"));
-      // Redirect based on role
-      router.push(href(locale, "/account"));
+      router.push(href(locale, "/academy"));
       return;
     }
 
@@ -174,7 +173,7 @@ export function AuthForm({ mode, defaultRole, onSignupSuccess, prefill, autoSubm
       onSignupSuccess(email, password);
       return;
     }
-    router.push(href(locale, "/account"));
+    router.push(href(locale, "/academy"));
   };
 
   /* Password-less e-mail sign-in replaces the whole password form. */
@@ -182,8 +181,6 @@ export function AuthForm({ mode, defaultRole, onSignupSuccess, prefill, autoSubm
     return (
       <EmailCodeForm
         entry={mode}
-        role={role}
-        onRoleChange={setRole}
         onBack={() => {
           setMethod("password");
           setErr("");
@@ -233,17 +230,6 @@ export function AuthForm({ mode, defaultRole, onSignupSuccess, prefill, autoSubm
         </div>
       </Field>
 
-      {mode === "login" && (
-        <div className="flex justify-end">
-          <Link
-            href={href(locale, "/forgot-password")}
-            className="text-sm font-medium text-accent underline-offset-4 hover:underline"
-          >
-            {fa ? "فراموشی رمز عبور؟" : "Forgot password?"}
-          </Link>
-        </div>
-      )}
-
       {mode === "signup" && (
         <Field label={fa ? "تکرار رمز عبور" : "Confirm password"}>
           <div className="relative">
@@ -266,13 +252,6 @@ export function AuthForm({ mode, defaultRole, onSignupSuccess, prefill, autoSubm
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-        </Field>
-      )}
-
-      {/* Role selector — only on signup, shared with the e-mail code and Google methods */}
-      {mode === "signup" && (
-        <Field label={fa ? "نوع حساب" : "Account type"}>
-          <RolePicker value={role} onChange={setRole} disabled={busy || autoSubmitting} />
         </Field>
       )}
 

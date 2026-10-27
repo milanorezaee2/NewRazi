@@ -1,20 +1,15 @@
 import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
 import type { Metadata } from "next";
 import Image from "@/components/ui/SiteImage";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight } from "lucide-react";
-import { PatternCard } from "@/components/cards/PatternCard";
-import { ProductCard } from "@/components/cards/ProductCard";
 import { PortfolioCard } from "@/components/cards/PortfolioCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Reveal } from "@/components/ui/Reveal";
-import { Button } from "@/components/ui/Button";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ScrollProgress } from "@/components/portfolio/ScrollProgress";
 import { GalleryLightbox } from "@/components/portfolio/GalleryLightbox";
 import { ShareButtons } from "@/components/portfolio/ShareButtons";
-import { enrichPattern, enrichPortfolio, enrichProduct, getSite } from "@/lib/data/queries";
+import { enrichPortfolio, getSite } from "@/lib/data/queries";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
 import { faNum, href, t } from "@/lib/utils";
@@ -93,7 +88,7 @@ export default async function PortfolioDetail({ params }: Props) {
       author: {
         "@type": "Person",
         name: t(p.artist.name, locale),
-        url: `https://rosieatelier.com/${locale}/artists/${p.artist.slug}`,
+        url: `https://rosieatelier.com/${locale}/portfolio`,
       },
     } : {}),
     url: `https://rosieatelier.com/${locale}/portfolio/${slug}`,
@@ -139,14 +134,13 @@ export default async function PortfolioDetail({ params }: Props) {
                   <div className="col-span-2 border-t border-border pt-5">
                     <dt className="text-caption text-muted">{d.common.creator}</dt>
                     <dd className="mt-2">
-                      <Link href={href(locale, `/artists/${p.artist.slug}`)} className="group inline-flex items-center gap-3">
+                      <div className="group inline-flex items-center gap-3">
                         <span className="relative h-11 w-11 overflow-hidden rounded-full"><Image src={p.artist.avatar} alt="" fill sizes="44px" className="object-cover" /></span>
                         <span>
-                          <span className="block font-medium group-hover:text-accent">{t(p.artist.name, locale)}</span>
+                          <span className="block font-medium">{t(p.artist.name, locale)}</span>
                           <span className="block text-caption text-foreground-secondary">{t(p.artist.profession, locale)}</span>
                         </span>
-                        <ArrowUpRight className="h-4 w-4 ms-auto text-muted group-hover:text-accent rtl-flip" />
-                      </Link>
+                      </div>
                     </dd>
                   </div>
                 )}
@@ -209,36 +203,11 @@ export default async function PortfolioDetail({ params }: Props) {
         </section>
       )}
 
-      {p.patterns.length > 0 && (
-        <section className="bg-background-secondary">
-          <div className="container-x section-y">
-            <SectionHeader eyebrow={d.nav.patterns} title={locale === "fa" ? "پترن‌های استفاده‌شده" : "Patterns used"} href={href(locale, "/patterns")} hrefLabel={d.nav.viewAll} />
-            <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-4">
-              {p.patterns.map((x) => <PatternCard key={x.id} pattern={enrichPattern(site, x)} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {p.products.length > 0 && (
-        <section className="container-x section-y">
-          <SectionHeader eyebrow={d.nav.products} title={locale === "fa" ? "محصولات استفاده‌شده" : "Products used"} href={href(locale, "/shop")} hrefLabel={d.nav.viewAll} />
-          <div className="mt-8 grid gap-5 xs:grid-cols-2 md:grid-cols-4">
-            {p.products.map((x) => <ProductCard key={x.id} product={enrichProduct(site, x)} />)}
-          </div>
-        </section>
-      )}
-
       {related.length > 0 && (
         <section className="container-x section-y">
           <SectionHeader eyebrow={d.nav.portfolio} title={d.common.relatedProjects} href={href(locale, "/portfolio")} hrefLabel={d.nav.viewAll} />
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {related.map((x) => <div key={x.id} className="aspect-[16/10]"><PortfolioCard item={x} /></div>)}
-          </div>
-          <div className="mt-10 flex justify-center">
-            <Button href={href(locale, "/custom")} variant="outline" size="lg">
-              {d.home.customCta}<ArrowUpRight className="h-4 w-4 rtl-flip" />
-            </Button>
           </div>
         </section>
       )}

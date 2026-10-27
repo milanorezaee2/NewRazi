@@ -196,7 +196,7 @@ function FaField({
   );
 }
 
-/** Small image uploader with preview — returns public URL via /api/artist/upload. */
+/** Small image uploader with preview — returns public URL via /api/admin/upload. */
 function ImagePicker({
   label, value, onChange, size = 72,
 }: {
@@ -215,7 +215,7 @@ function ImagePicker({
     try {
       const form = new FormData();
       form.append("file", file);
-      const response = await fetch("/api/artist/upload", {
+      const response = await fetch("/api/admin/upload", {
         method: "POST",
         credentials: "include",
         body: form,

@@ -33,56 +33,6 @@ const ThemeContext = createContext<ThemeCtx>({ theme: "light", toggle: () => {} 
 export const useTheme = () => useContext(ThemeContext);
 
 /* ------------------------------------------------------------------ */
-/* Cart                                                                 */
-/* ------------------------------------------------------------------ */
-export interface CartLine {
-  key: string;
-  kind: "pattern" | "product";
-  id: string;
-  sku: string;
-  title: string;
-  image: string;
-  price: { fa: number; en: number };
-  colorName?: string;
-  colorHex?: string;
-  qty: number;
-  href: string;
-}
-interface CartCtx {
-  lines: CartLine[];
-  count: number;
-  add: (line: Omit<CartLine, "qty" | "key"> & { qty?: number }) => void;
-  remove: (key: string) => void;
-  setQty: (key: string, qty: number) => void;
-  clear: () => void;
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
-  lastAdded: string | null;
-}
-const CartContext = createContext<CartCtx | null>(null);
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart outside provider");
-  return ctx;
-}
-
-/* ------------------------------------------------------------------ */
-/* Favorites                                                            */
-/* ------------------------------------------------------------------ */
-interface FavCtx {
-  ids: Set<string>;
-  toggle: (id: string) => void;
-  has: (id: string) => boolean;
-}
-const FavContext = createContext<FavCtx | null>(null);
-export function useFavorites() {
-  const ctx = useContext(FavContext);
-  if (!ctx) throw new Error("useFavorites outside provider");
-  return ctx;
-}
-
-/* ------------------------------------------------------------------ */
 /* Auth                                                                  */
 /* ------------------------------------------------------------------ */
 export interface User {
@@ -127,37 +77,6 @@ export function useAuth() {
   return ctx;
 }
 
-/* ------------------------------------------------------------------ */
-/* Search palette                                                       */
-/* ------------------------------------------------------------------ */
-interface SearchCtx {
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
-}
-const SearchContext = createContext<SearchCtx>({ isOpen: false, open: () => {}, close: () => {} });
-export const useSearch = () => useContext(SearchContext);
-
-/* ------------------------------------------------------------------ */
-function useLocalState<T>(key: string, initial: T): [T, (v: T | ((p: T) => T)) => void] {
-  const [state, setState] = useState<T>(initial);
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(key);
-      if (raw) setState(JSON.parse(raw));
-    } catch {}
-    setHydrated(true);
-  }, [key]);
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      window.localStorage.setItem(key, JSON.stringify(state));
-    } catch {}
-  }, [key, state, hydrated]);
-  return [state, setState];
-}
-
 export function AppProviders({ locale, children }: { locale: Locale; children: React.ReactNode }) {
   // Keep <html lang/dir> in sync with the active locale (the root layout
   // cannot see the [locale] param; middleware forwards it per request, and
@@ -190,56 +109,6 @@ export function AppProviders({ locale, children }: { locale: Locale; children: R
       return next;
     });
   }, []);
-
-  /* cart */
-  const [lines, setLines] = useLocalState<CartLine[]>("ra-cart", []);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [lastAdded, setLastAdded] = useState<string | null>(null);
-  const add = useCallback<CartCtx["add"]>(
-    (line) => {
-      const key = `${line.kind}:${line.id}:${line.colorName ?? ""}`;
-      setLines((prev) => {
-        const existing = prev.find((l) => l.key === key);
-        if (existing) return prev.map((l) => (l.key === key ? { ...l, qty: l.qty + (line.qty ?? 1) } : l));
-        return [...prev, { ...line, key, qty: line.qty ?? 1 }];
-      });
-      setLastAdded(key);
-      window.setTimeout(() => setLastAdded(null), 1600);
-    },
-    [setLines],
-  );
-  const remove = useCallback((key: string) => setLines((p) => p.filter((l) => l.key !== key)), [setLines]);
-  const setQty = useCallback(
-    (key: string, qty: number) => setLines((p) => p.map((l) => (l.key === key ? { ...l, qty: Math.max(1, qty) } : l))),
-    [setLines],
-  );
-  const clear = useCallback(() => setLines([]), [setLines]);
-  const cartValue = useMemo<CartCtx>(
-    () => ({
-      lines,
-      count: lines.reduce((n, l) => n + l.qty, 0),
-      add,
-      remove,
-      setQty,
-      clear,
-      isOpen: cartOpen,
-      open: () => setCartOpen(true),
-      close: () => setCartOpen(false),
-      lastAdded,
-    }),
-    [lines, add, remove, setQty, clear, cartOpen, lastAdded],
-  );
-
-  /* favorites */
-  const [favArr, setFavArr] = useLocalState<string[]>("ra-favs", []);
-  const favValue = useMemo<FavCtx>(() => {
-    const set = new Set(favArr);
-    return {
-      ids: set,
-      has: (id) => set.has(id),
-      toggle: (id) => setFavArr((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id])),
-    };
-  }, [favArr, setFavArr]);
 
   /* auth — fully server-side session via HttpOnly cookie */
   const [serverUser, setServerUser] = useState<User | null | undefined>(undefined);
@@ -322,34 +191,10 @@ export function AppProviders({ locale, children }: { locale: Locale; children: R
     [user, serverUser, commitServerUser],
   );
 
-  /* search */
-  const [searchOpen, setSearchOpen] = useState(false);
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setSearchOpen((o) => !o);
-      }
-      if (e.key === "Escape") setSearchOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-  const searchValue = useMemo<SearchCtx>(
-    () => ({ isOpen: searchOpen, open: () => setSearchOpen(true), close: () => setSearchOpen(false) }),
-    [searchOpen],
-  );
-
   return (
     <LocaleContext.Provider value={localeValue}>
       <ThemeContext.Provider value={{ theme, toggle: toggleTheme }}>
-        <AuthContext.Provider value={authValue}>
-          <FavContext.Provider value={favValue}>
-            <CartContext.Provider value={cartValue}>
-              <SearchContext.Provider value={searchValue}>{children}</SearchContext.Provider>
-            </CartContext.Provider>
-          </FavContext.Provider>
-        </AuthContext.Provider>
+        <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>
       </ThemeContext.Provider>
     </LocaleContext.Provider>
   );

@@ -43,8 +43,6 @@ test("every form explains a CSRF rejection and a blocked session cookie", () => 
     assert.match(form, /session_cookie_blocked:/, file);
     assert.match(form, /sessionCookieWorks\(\)/, file);
   }
-  const creator = read("src/components/profile/CreatorSignupForm.tsx");
-  assert.match(creator, /csrf_missing:/);
 });
 
 test("sessionCookieWorks only warns when the answer is trustworthy", () => {

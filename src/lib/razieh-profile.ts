@@ -142,20 +142,19 @@ export const RAZIEH_PROFILE = {
       "For custom projects, exclusive production, brand collaborations or hosting a workshop and live session at Rosie Atelier Academy, these are the ways in.",
     ),
     links: [
-      { label: L("تماس با ما", "Contact us"), path: "/contact" },
       { label: L("آکادمی آتلیه رزی", "Rosie Atelier Academy"), path: "/academy" },
-      { label: L("درباره‌ی آتلیه", "About the atelier"), path: "/about" },
-      { label: L("همکاری به‌عنوان طراح", "Join as a designer"), path: "/creators/join" },
+      { label: L("پورتفولیوی آثار", "Portfolio of works"), path: "/portfolio" },
+      { label: L("ایمیل به آتلیه", "Email the atelier"), path: "mailto:hello@rosieatelier.com" },
     ] as { label: Localized; path: string }[],
   },
 
-  /** Where the introduction goes on to: the artist's own portfolio page. */
+  /** Where the introduction goes on to. */
   personalPortfolio: {
     label: L("پورتفولیوی شخصی", "Personal portfolio"),
-    href: "/razieh",
+    href: "/portfolio",
     note: L(
-      "صفحه‌ی اختصاصی راضیه: هیرو، نمونه‌کارها، فلسفه، بخش آکادمیک و تماس — با امکان جابه‌جایی زبان.",
-      "Razieh's own page: hero, works, philosophy, academic section and contact — with a language switch.",
+      "آثار، فلسفه‌ی طراحی و مسیر حرفه‌ای راضیه در همین صفحه‌ی پورتفولیو روایت شده است.",
+      "Razieh's works, design philosophy and professional path are told on this portfolio page.",
     ),
   },
 } as const;

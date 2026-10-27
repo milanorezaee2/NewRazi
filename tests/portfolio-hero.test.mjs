@@ -33,8 +33,4 @@ test('portfolio preview offset changes only the desktop video frame dimensions',
   assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?width: calc\(100% \+ var\(--portfolio-video-offset\)\)/);
   assert.match(css, /margin-left: calc\(0px - var\(--portfolio-video-offset\)\)/);
 });
-test('studio hero does not leak into artist portfolio routes', () => {
-  for (const file of ['src/app/[locale]/artists/[slug]/portfolio/page.tsx', 'src/app/[locale]/artists/[slug]/portfolio/[workSlug]/page.tsx']) {
-    assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /PortfolioHero|PortfolioIntro/);
-  }
-});
+

@@ -3,7 +3,6 @@ import { EMAIL_LINK_TTL_S, absoluteUrl, mailProvider, siteUrl } from "./config";
 import { KEYS, mutateCollection, readCollection } from "./store";
 import { newId } from "./assets";
 import { signObjectToken } from "./storage";
-import { toPersianDigits } from "./pdf/text";
 import { assetColourways, assetDeliverables } from "./colourways";
 import { formatLabel } from "./formats";
 import type { Localized } from "@/lib/i18n/types";
@@ -181,6 +180,7 @@ function button(href: string, label: string) {
   return `<p style="margin:22px 0"><a href="${href}" style="background:${BRAND};color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:600;display:inline-block">${label}</a></p>`;
 }
 
+const toPersianDigits = (value: string) => value.replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
 const faNum = (value: number | string) => toPersianDigits(String(value));
 
 function money(price: { fa: number; en: number }, locale: "fa" | "en") {

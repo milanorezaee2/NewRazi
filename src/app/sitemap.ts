@@ -1,95 +1,45 @@
-import { publicSiteContent } from "@/lib/artist/public-profile";
-import { publicEducationItems } from "@/lib/academy/publication";
-import { isStudioPortfolio, isPublishedPortfolio, artistPortfolioWorks, artistPortfolioPath } from "@/lib/artist/portfolio";
 import type { MetadataRoute } from "next";
+import { publicEducationItems } from "@/lib/academy/publication";
+import { isPublishedPortfolio, isStudioPortfolio } from "@/lib/artist/portfolio";
 import { getContent } from "@/lib/data/store";
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/lib/i18n/types";
-
-/** Static route segments of the storefront (locale-prefixed). Admin/checkout/account are excluded. */
-const STATIC_PAGES = [
-  "", "about", "academy", "artists", "collections", "contact", "creators/join", "custom",
-  "faq", "marketplace", "marketplace/subscriptions", "patterns", "portfolio", "projects", "razieh", "returns", "shop", "spaces", "stories", "styles",
-] as const;
-
-/** collection (key of SiteContent) → route segment its detail pages live under */
-const slugCollections = (site: SiteContentLike): [string, { slug: string }[]][] => [
-  ["patterns", site.patterns],
-  ["shop", site.products],
-  ["artists", site.artists],
-  ["portfolio", site.portfolios],
-  ["academy", site.education],
-  ["collections", site.collections],
-  ["stories", site.stories],
-  ["spaces", site.spaces],
-  ["styles", site.categories],
-];
-
-interface SiteContentLike {
-  patterns: { slug: string }[];
-  products: { slug: string }[];
-  artists: { slug: string }[];
-  portfolios: { slug: string }[];
-  education: { slug: string }[];
-  collections: { slug: string }[];
-  stories: { slug: string }[];
-  spaces: { slug: string }[];
-  categories: { slug: string }[];
-}
-
-const LEGAL_DOCS = ["privacy", "terms", "licenses"];
+import { DEFAULT_LOCALE, LOCALES } from "@/lib/i18n/types";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
-/** Rebuild against the current publication state so review decisions take effect immediately. */
-export const revalidate = 0;
+/** The public site is the academy and the studio portfolio. */
+const STATIC_PAGES = ["/academy", "/portfolio"] as const;
+
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const content = await getContent();
-  const site = publicSiteContent(content);
-  site.portfolios = site.portfolios.filter((portfolio) => isStudioPortfolio(portfolio) && isPublishedPortfolio(portfolio));
-  site.education = publicEducationItems(site.education);
-  const url = (l: Locale, path: string) => `${SITE_URL}/${l}${path ? `/${path}` : ""}`;
+  const education = publicEducationItems(content.education);
+  const portfolios = content.portfolios.filter((item) => isStudioPortfolio(item) && isPublishedPortfolio(item));
 
-  const entries: MetadataRoute.Sitemap = [];
-
-  for (const page of STATIC_PAGES) {
-    entries.push({
-      url: url(DEFAULT_LOCALE, page),
+  const entries: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}/${DEFAULT_LOCALE}/academy`,
+      lastModified: new Date(),
       changeFrequency: "weekly",
-      priority: page === "" ? 1 : 0.7,
-      alternates: { languages: Object.fromEntries(LOCALES.map((l) => [l, url(l, page)])) },
-    });
-  }
+      priority: 1,
+    },
+  ];
 
-  for (const [segment, items] of slugCollections(site)) {
-    for (const item of items) {
-      const path = `${segment}/${item.slug}`;
+  for (const locale of LOCALES) {
+    for (const path of STATIC_PAGES) {
       entries.push({
-        url: url(DEFAULT_LOCALE, path),
-        changeFrequency: "monthly",
-        priority: 0.6,
-        alternates: { languages: Object.fromEntries(LOCALES.map((l) => [l, url(l, path)])) },
+        url: `${SITE_URL}/${locale}${path}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: path === "/academy" ? 1 : 0.9,
       });
     }
-  }
-
-  for (const artist of site.artists) {
-    const paths = [artistPortfolioPath(artist.slug), ...artistPortfolioWorks(content.portfolios, artist.id).map(work => artistPortfolioPath(artist.slug, work.slug))];
-    for (const path of paths) {
-      entries.push({
-        url: url(DEFAULT_LOCALE, path.slice(1)), changeFrequency: "monthly", priority: 0.6,
-        alternates: { languages: Object.fromEntries(LOCALES.map(l => [l, url(l, path.slice(1))])) },
-      });
+    for (const item of education) {
+      entries.push({ url: `${SITE_URL}/${locale}/academy/${item.slug}`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 });
     }
-  }
-
-  for (const doc of LEGAL_DOCS) {
-    entries.push({
-      url: url(DEFAULT_LOCALE, `legal/${doc}`),
-      changeFrequency: "yearly",
-      priority: 0.3,
-      alternates: { languages: Object.fromEntries(LOCALES.map((l) => [l, url(l, `legal/${doc}`)])) },
-    });
+    for (const item of portfolios) {
+      entries.push({ url: `${SITE_URL}/${locale}/portfolio/${item.slug}`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 });
+    }
   }
 
   return entries;

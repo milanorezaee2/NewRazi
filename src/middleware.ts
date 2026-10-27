@@ -5,12 +5,6 @@ import { readSessionToken, SESSION_COOKIE } from "@/lib/session";
 import { applySecurityHeaders, createContentSecurityPolicy } from "@/lib/security/headers";
 import { ensureCsrfToken } from "@/lib/security/csrf";
 
-function isOwnerEmail(email: string): boolean {
-  const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
-  if (!ownerEmail) return false;
-  return email.toLowerCase() === ownerEmail;
-}
-
 function createNonce(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   let binary = "";
@@ -82,43 +76,6 @@ export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
     return applySecurityHeaders(req, NextResponse.redirect(url), nonce);
-  }
-
-  /* -------- Protected routes (سایت اصلی) -------- */
-  const segments = pathname.split("/").filter(Boolean);
-  const rest = segments.slice(1).join("/");
-
-  const sessionToken = req.cookies.get(SESSION_COOKIE)?.value;
-  const session = await readSessionToken(sessionToken);
-
-  /*
-   * /[locale]/artist — the seller area.
-   *
-   * Signed-out visitors go to the login page. A signed-in *buyer* is let
-   * through on purpose: both /artist and /artist/marketplace explain that the
-   * area is for artists and point at the designer registration, which is far
-   * friendlier than a login form for an account that cannot open it. The
-   * artist APIs keep enforcing the role themselves.
-   */
-  if (rest === "artist" || rest.startsWith("artist/")) {
-    if (!session) {
-      const loginUrl = req.nextUrl.clone();
-      loginUrl.pathname = `/${segments[0]}/login`;
-      loginUrl.searchParams.set("next", pathname);
-      return applySecurityHeaders(req, NextResponse.redirect(loginUrl), nonce);
-    }
-  }
-
-  // /[locale]/owner/* — requires owner email or admin role
-  if (rest === "owner" || rest.startsWith("owner/")) {
-    const isOwnerSession =
-      session && (session.role === "admin" || isOwnerEmail(session.email));
-    if (!isOwnerSession) {
-      const loginUrl = req.nextUrl.clone();
-      loginUrl.pathname = `/${segments[0]}/login`;
-      loginUrl.searchParams.set("next", pathname);
-      return applySecurityHeaders(req, NextResponse.redirect(loginUrl), nonce);
-    }
   }
 
   return res;

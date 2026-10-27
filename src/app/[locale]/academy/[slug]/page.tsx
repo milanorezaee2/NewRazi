@@ -4,15 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, Layers, Signal, Users } from "lucide-react";
 import { EducationCard } from "@/components/cards/EducationCard";
-import { PatternCard } from "@/components/cards/PatternCard";
-import { ProductCard } from "@/components/cards/ProductCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Reveal } from "@/components/ui/Reveal";
 import { CourseProgressSidebar } from "@/components/academy/CourseProgressSidebar";
 import { EnrollForm } from "@/components/academy/EnrollForm";
-import { StickyBuyBar } from "@/components/product/StickyBuyBar";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { academyOverview } from "@/lib/data/academy";
 import { isPublishedEducation, publicEducationItems } from "@/lib/academy/publication";
@@ -20,7 +17,7 @@ import { priceLabel } from "@/lib/utils";
 import { getAllReservations } from "@/lib/data/reservations";
 import { getSession } from "@/lib/auth";
 import { hasGrantedReservation, isFreePrice } from "@/lib/academy-live";
-import { enrichEducation, enrichPattern, enrichProduct, getSite } from "@/lib/data/queries";
+import { enrichEducation, getSite } from "@/lib/data/queries";
 import type { EnrichedEducation } from "@/lib/data/enrich";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
@@ -137,7 +134,7 @@ export default async function EducationDetail({ params }: Props) {
           instructor: {
             "@type": "Person",
             name: t(e.author.name, locale),
-            url: `https://rosieatelier.com/${locale}/artists/${e.author.slug}`,
+            url: `https://rosieatelier.com/${locale}/portfolio`,
           },
         } : {}),
         ...(e.price ? {
@@ -204,7 +201,7 @@ export default async function EducationDetail({ params }: Props) {
                     name={instructorName}
                     photo={instructorPhoto}
                     label="مدرس"
-                    href={e.author && !enriched.instructor?.artist ? href(locale, `/artists/${e.author.slug}`) : undefined}
+                    href={undefined}
                   />
                 ) : null}
                 {hostName ? (
@@ -220,12 +217,12 @@ export default async function EducationDetail({ params }: Props) {
                 {d.common.author}: {eventHost}
               </span>
             ) : e.author && (
-              <Link href={href(locale, `/artists/${e.author.slug}`)} className="inline-flex items-center gap-2 hover:text-white">
+              <span className="inline-flex items-center gap-2">
                 <span className="relative h-8 w-8 overflow-hidden rounded-full">
                   <Image src={e.author.avatar} alt="" fill sizes="32px" className="object-cover" />
                 </span>
                 {d.common.author}: {t(e.author.name, locale)}
-              </Link>
+              </span>
             )}
             <span className="inline-flex items-center gap-1"><Signal className="h-3.5 w-3.5" />{d.common[e.difficulty]}</span>
             <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{formatDuration(e.durationMin, locale, d.common)}</span>
@@ -294,25 +291,6 @@ export default async function EducationDetail({ params }: Props) {
                 />
               </div>
 
-              {/* Mobile sticky enroll bar (jumps to the form above) */}
-              <StickyBuyBar
-                watchId="enroll"
-                revealAfter={480}
-                caption={t(e.title, locale)}
-                price={isFreePrice(e.price) ? (locale === "fa" ? "رایگان" : "Free") : formatPrice(e.price!, locale)}
-              >
-                <a
-                  href="#enroll"
-                  className="inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-transform duration-200 active:scale-[0.98]"
-                >
-                  {e.type === "course"
-                    ? isFreePrice(e.price)
-                      ? locale === "fa" ? "شروع رایگان دوره" : "Start free"
-                      : locale === "fa" ? "ثبت‌نام در دوره" : "Enroll in course"
-                    : locale === "fa" ? "رزرو صندلی" : "Reserve a seat"}
-                </a>
-              </StickyBuyBar>
-
               {stats?.capacity ? (
                 <p className="text-caption text-foreground-secondary tabular">
                   {locale === "fa"
@@ -362,18 +340,15 @@ export default async function EducationDetail({ params }: Props) {
 
               {/* Author */}
               {e.author && (
-                <Link
-                  href={href(locale, `/artists/${e.author.slug}`)}
-                  className="flex items-center gap-3 border-t border-border pt-4 group"
-                >
+                <div className="flex items-center gap-3 border-t border-border pt-4 group">
                   <span className="relative h-12 w-12 overflow-hidden rounded-full">
                     <Image src={e.author.avatar} alt="" fill sizes="48px" className="object-cover" />
                   </span>
                   <span>
-                    <span className="block font-medium group-hover:text-accent">{t(e.author.name, locale)}</span>
+                    <span className="block font-medium">{t(e.author.name, locale)}</span>
                     <span className="block text-caption text-foreground-secondary">{t(e.author.profession, locale)}</span>
                   </span>
-                </Link>
+                </div>
               )}
             </div>
           </aside>
@@ -403,24 +378,6 @@ export default async function EducationDetail({ params }: Props) {
         </section>
       )}
 
-      {e.patterns.length > 0 && (
-        <section className="bg-background-secondary">
-          <div className="container-x section-y">
-            <SectionHeader eyebrow={d.nav.patterns} title={d.common.relatedPatterns} href={href(locale, "/patterns")} hrefLabel={d.nav.viewAll} />
-            <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-4">
-              {e.patterns.map((p) => <PatternCard key={p.id} pattern={enrichPattern(site, p)} />)}
-            </div>
-          </div>
-        </section>
-      )}
-      {e.products.length > 0 && (
-        <section className="container-x section-y">
-          <SectionHeader eyebrow={d.nav.products} title={d.common.relatedProducts} href={href(locale, "/shop")} hrefLabel={d.nav.viewAll} />
-          <div className="mt-8 grid gap-5 xs:grid-cols-2 md:grid-cols-4">
-            {e.products.map((p) => <ProductCard key={p.id} product={enrichProduct(site, p)} />)}
-          </div>
-        </section>
-      )}
       {related.length > 0 && (
         <section className="container-x section-y">
           <SectionHeader eyebrow={d.nav.education} title={d.common.relatedTutorials} href={href(locale, "/academy")} hrefLabel={d.nav.viewAll} />

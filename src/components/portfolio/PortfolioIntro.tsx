@@ -134,7 +134,7 @@ export function PortfolioIntro({ locale }: { locale: Locale }) {
               <p className="text-label text-accent">{t(p.personalPortfolio.label, locale)}</p>
               <p className="mt-2 text-body-sm text-foreground-secondary">{t(p.personalPortfolio.note, locale)}</p>
               <Button href={href(locale, p.personalPortfolio.href)} variant="outline" size="sm" className="mt-4">
-                {fa ? "رفتن به صفحه‌ی راضیه" : "Open Razieh's page"}
+                {fa ? "دیدن آثار منتخب" : "See selected works"}
               </Button>
             </div>
           </div>
@@ -156,11 +156,21 @@ export function PortfolioCollaboration({ locale }: { locale: Locale }) {
           <p className="mt-3 text-body-sm text-foreground-secondary">{t(c.text, locale)}</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          {c.links.map((link) => (
-            <Button key={link.path} href={href(locale, link.path)} variant="outline" size="sm">
-              {t(link.label, locale)}
-            </Button>
-          ))}
+          {c.links.map((link) =>
+            link.path.startsWith("mailto:") ? (
+              <a
+                key={link.path}
+                href={link.path}
+                className="inline-flex items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:border-foreground"
+              >
+                {t(link.label, locale)}
+              </a>
+            ) : (
+              <Button key={link.path} href={href(locale, link.path)} variant="outline" size="sm">
+                {t(link.label, locale)}
+              </Button>
+            ),
+          )}
         </div>
       </div>
     </section>
