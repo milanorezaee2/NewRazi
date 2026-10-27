@@ -18,7 +18,11 @@ export const dynamic = "force-dynamic";
  *   · course            → self-paced enrollment, unlimited, no schedule
  *   · workshop/webinar  → seat in a live event, bounded by `liveEvent.capacity`
  *
- * Body: { slug, name, email }
+ * Body: { slug, name, email, source? }
+ *
+ * `source` is the page that sent the visitor here (`portfolio`, `academy`,
+ * `start`, …) so conversion can be attributed per entry point. Unknown values
+ * are dropped rather than stored.
  */
 export async function POST(req: Request) {
   const key = `academy-enroll:${clientIp(req)}`;
@@ -31,12 +35,15 @@ export async function POST(req: Request) {
   recordAttempt(key);
 
   const body = (await req.json().catch(() => null)) as
-    | { slug?: string; name?: string; email?: string }
+    | { slug?: string; name?: string; email?: string; source?: string }
     | null;
 
   const slug = body?.slug?.trim();
   const name = body?.name?.trim();
   const email = body?.email?.trim().toLowerCase();
+  const ATTRIBUTION_SOURCES = ["portfolio", "academy", "start", "home", "course", "newsletter", "direct"] as const;
+  const rawSource = body?.source?.trim().toLowerCase();
+  const source = rawSource && (ATTRIBUTION_SOURCES as readonly string[]).includes(rawSource) ? rawSource : "direct";
 
   if (!slug || !name || name.length < 2 || !email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ ok: false, error: "invalid_payload" }, withNoStore({ status: 400 }));
@@ -67,6 +74,7 @@ export async function POST(req: Request) {
       // Free content is immediately available. Paid access is manually granted after payment verification.
       accessGranted: isFreePrice(item.price),
       paymentRequired: !isFreePrice(item.price),
+      source,
     });
 
     return NextResponse.json(

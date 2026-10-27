@@ -95,5 +95,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|fonts|images|favicon.ico|.*\\..*).*)"],
+  // `og` renders social cards at the root (no locale prefix) and must not be rewritten to `/{locale}/og`.
+  matcher: ["/((?!api|og|_next|fonts|images|favicon.ico|.*\\..*).*)"],
 };

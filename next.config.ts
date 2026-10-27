@@ -8,6 +8,8 @@ import type { NextConfig } from "next";
  * Front-door tiles map to the portfolio; learning topics map to the academy.
  */
 const RETIRED_TO_ACADEMY = ["patterns", "styles", "spaces", "collections"] as const;
+/** Old contact/enquiry pages now point at the single entry page. */
+const RETIRED_TO_START = ["contact", "custom-order", "collaborate", "hire"] as const;
 const RETIRED_TO_PORTFOLIO = [
   "about",
   "razieh",
@@ -23,7 +25,6 @@ const RETIRED_TO_PORTFOLIO = [
   "favorites",
   "delivery",
   "verify",
-  "contact",
   "faq",
   "returns",
   "legal",
@@ -58,6 +59,12 @@ const nextConfig: NextConfig = {
         ["fa", "en"].flatMap((locale) => [
           { source: `/${locale}/${section}`, destination: `/${locale}/academy`, statusCode: 301 as const },
           { source: `/${locale}/${section}/:path*`, destination: `/${locale}/academy`, statusCode: 301 as const },
+        ]),
+      ),
+      ...RETIRED_TO_START.flatMap((section) =>
+        ["fa", "en"].flatMap((locale) => [
+          { source: `/${locale}/${section}`, destination: `/${locale}/start`, statusCode: 301 as const },
+          { source: `/${locale}/${section}/:path*`, destination: `/${locale}/start`, statusCode: 301 as const },
         ]),
       ),
       ...RETIRED_TO_PORTFOLIO.flatMap((section) =>

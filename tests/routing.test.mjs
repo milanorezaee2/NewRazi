@@ -39,9 +39,16 @@ test("retired public routes answer with a permanent 301 to a surviving page", ()
   for (const section of ["patterns", "styles", "spaces", "collections"]) assert.ok(entries.includes(section));
 
   const portfolioEntries = [...portfolioList[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  for (const section of ["shop", "marketplace", "artists", "about", "contact"]) {
+  for (const section of ["shop", "marketplace", "artists", "about"]) {
     assert.ok(portfolioEntries.includes(section));
   }
+
+  /* Enquiry pages now resolve to the single entry page. */
+  const startList = config.match(/const RETIRED_TO_START = \[([\s\S]*?)\] as const;/);
+  assert.ok(startList, "the start redirect list exists");
+  const startEntries = [...startList[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  for (const section of ["contact", "custom-order"]) assert.ok(startEntries.includes(section));
+  assert.match(config, /destination: `\/\$\{locale\}\/start`/);
 
   assert.match(config, /statusCode: 301 as const/);
   assert.match(config, /source: `\/\$\{locale\}\/\$\{section\}\/:path\*`/);

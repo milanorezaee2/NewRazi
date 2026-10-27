@@ -6,8 +6,8 @@ import { LOCALES } from "@/lib/i18n/types";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
-/** The public site is the studio portfolio (front door) and the academy. */
-const STATIC_PAGES = ["/portfolio", "/academy"] as const;
+/** The public site is the studio portfolio (front door), the academy, and the start page. */
+const STATIC_PAGES = ["/portfolio", "/academy", "/start"] as const;
 
 export const revalidate = 3600;
 
@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${SITE_URL}/${locale}${path}`,
         lastModified,
         changeFrequency: "weekly",
-        priority: path === "/portfolio" ? 1 : 0.9,
+        priority: path === "/portfolio" ? 1 : path === "/academy" ? 0.9 : 0.6,
       });
     }
     for (const item of education) {

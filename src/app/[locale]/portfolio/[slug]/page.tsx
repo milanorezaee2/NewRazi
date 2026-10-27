@@ -1,3 +1,4 @@
+import { ogImageUrl } from "@/lib/seo/og-url";
 import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
 import type { Metadata } from "next";
 import Image from "@/components/ui/SiteImage";
@@ -9,6 +10,11 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { ScrollProgress } from "@/components/portfolio/ScrollProgress";
 import { GalleryLightbox } from "@/components/portfolio/GalleryLightbox";
 import { ShareButtons } from "@/components/portfolio/ShareButtons";
+import { CaseStudySection } from "@/components/portfolio/CaseStudySection";
+import { StickyCta } from "@/components/ui/StickyCta";
+import { EducationCard } from "@/components/cards/EducationCard";
+import { publicEducationItems } from "@/lib/academy/publication";
+import { enrichEducation } from "@/lib/data/queries";
 import { enrichPortfolio, getSite } from "@/lib/data/queries";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
@@ -34,22 +40,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = t(p.title, locale);
   const description = t(p.intro, locale);
   const url = `https://rosieatelier.com/${locale}/portfolio/${slug}`;
+  /* Per-item card: the work's own cover, cropped and stamped server-side. */
+  const card = ogImageUrl({
+    src: p.cover,
+    title: t(p.title, "en") || p.slug,
+    eyebrow: locale === "fa" ? "" : "Portfolio",
+  });
   return {
     title,
     description,
-    alternates: { canonical: `/${locale}/portfolio/${slug}` },
+    alternates: {
+      canonical: `/${locale}/portfolio/${slug}`,
+      languages: { fa: `/fa/portfolio/${slug}`, en: `/en/portfolio/${slug}`, "x-default": `/fa/portfolio/${slug}` },
+    },
     openGraph: {
       title,
       description,
       url,
       type: "article",
-      images: [{ url: p.cover, width: 1200, height: 800, alt: title }],
+      images: [{ url: card, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [p.cover],
+      images: [card],
     },
   };
 }
@@ -68,6 +83,26 @@ export default async function PortfolioDetail({ params }: Props) {
     .slice(0, 2)
     .map((x) => enrichPortfolio(site, x));
   const yr = locale === "fa" ? faNum(p.year) : p.year;
+
+  /*
+   * Related courses: prefer the same discipline, then shared patterns, then the
+   * featured courses. The block never renders empty, so the work always leads
+   * somewhere on the academy side.
+   */
+  const education = publicEducationItems(content.education).map((item) => enrichEducation(content, item));
+  const scored = education
+    .map((item) => {
+      let score = 0;
+      if (item.categoryId && item.categoryId === p.categoryId) score += 3;
+      score += item.patternIds.filter((id) => p.patternIds.includes(id)).length * 2;
+      if (item.featured) score += 1;
+      return { item, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const relatedCourses = (scored.length ? scored : education.map((item) => ({ item, score: 0 })))
+    .slice(0, 2)
+    .map((entry) => entry.item);
 
   const breadcrumb = [
     { label: d.nav.home, href: href(locale, "/") },
@@ -153,6 +188,9 @@ export default async function PortfolioDetail({ params }: Props) {
         </div>
       </section>
 
+      {/* Case study — problem, process, outcome, tools */}
+      <CaseStudySection study={p.caseStudy} locale={locale} />
+
       {/* Story blocks */}
       <section className="space-y-14 md:space-y-24">
         {p.story.map((b, i) => {
@@ -203,6 +241,29 @@ export default async function PortfolioDetail({ params }: Props) {
         </section>
       )}
 
+      {relatedCourses.length > 0 && (
+        <section className="bg-background-secondary">
+          <div className="container-x section-y">
+            <SectionHeader
+              eyebrow={locale === "fa" ? "آکادمی" : "Academy"}
+              title={locale === "fa" ? "تکنیک این اثر را یاد بگیرید" : "Learn the technique behind this work"}
+              description={
+                locale === "fa"
+                  ? "دوره‌هایی که به همین پترن، رنگ و مقیاس می‌پردازند."
+                  : "Courses that work on the same pattern, colour and scale."
+              }
+              href={`${href(locale, "/academy")}?from=portfolio`}
+              hrefLabel={locale === "fa" ? "دیدن همه دوره‌ها" : "All courses"}
+            />
+            <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              {relatedCourses.map((item) => (
+                <EducationCard key={item.id} item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {related.length > 0 && (
         <section className="container-x section-y">
           <SectionHeader eyebrow={d.nav.portfolio} title={d.common.relatedProjects} href={href(locale, "/portfolio")} hrefLabel={d.nav.viewAll} />
@@ -211,6 +272,19 @@ export default async function PortfolioDetail({ params }: Props) {
           </div>
         </section>
       )}
+      <StickyCta
+        label={t(p.title, locale)}
+        primary={{
+          label: locale === "fa" ? "دورهٔ مرتبط" : "Related course",
+          href: relatedCourses[0]
+            ? `${href(locale, `/academy/${relatedCourses[0].slug}`)}?from=portfolio`
+            : `${href(locale, "/academy")}?from=portfolio`,
+        }}
+        secondary={{
+          label: locale === "fa" ? "درخواست همکاری" : "Start a project",
+          href: `${href(locale, "/start")}?from=portfolio`,
+        }}
+      />
     </article>
   );
 }

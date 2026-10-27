@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { PortfolioHero } from "@/components/portfolio/PortfolioHero";
 import { RAZIEH_PROFILE } from "@/lib/razieh-profile";
 import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
+import { TrustBar } from "@/components/portfolio/TrustBar";
 import { PortfolioCollaboration, PortfolioIntro } from "@/components/portfolio/PortfolioIntro";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Reveal } from "@/components/ui/Reveal";
@@ -14,6 +15,7 @@ import { dictionaries } from "@/lib/i18n/dictionary";
 import type { Locale } from "@/lib/i18n/types";
 import { getUsedPortfolioCategories } from "@/lib/portfolio-categories";
 import { getEditableRouteMetadata } from "@/lib/site-seo";
+import { StickyCta } from "@/components/ui/StickyCta";
 import { href } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -23,8 +25,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: L
   return getEditableRouteMetadata("/portfolio", locale, dictionaries[locale].nav.portfolio);
 }
 
-export default async function PortfolioPage({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function PortfolioPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ discipline?: string }>;
+}) {
   const { locale } = await params;
+  const { discipline } = await searchParams;
   const content = await getSite();
   const site = { ...content, portfolios: content.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)) };
   const items = site.portfolios.map((p) => enrichPortfolio(site, p));
@@ -74,26 +83,13 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
         </p>
       </section>
 
-      {/* Stats bar */}
-      <section className="container-x pt-8 pb-4">
-        <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-background-secondary rtl:divide-x-reverse">
-          {[
-            [items.length, locale === "fa" ? "اثر و روایت" : "Works & stories"],
-            [categories.length, locale === "fa" ? "دسته‌بندی" : "Categories"],
-            [new Set(site.portfolios.map((p) => p.artistId).filter(Boolean)).size, locale === "fa" ? "طراح همکار" : "Contributing designers"],
-          ].map(([val, label]) => (
-            <div key={String(label)} className="flex flex-col items-center gap-0.5 py-6 text-center">
-              <span className="font-display text-h2 tabular-nums leading-none">{val}</span>
-              <span className="text-caption text-muted">{label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Trust band — realised projects, named clients, disciplines, cities */}
+      <TrustBar works={items} locale={locale} />
 
       {/* Grid */}
       <section className="container-x pb-20 pt-6">
         <Suspense>
-          <PortfolioGrid items={items} categories={categories} />
+          <PortfolioGrid items={items} categories={categories} initialDiscipline={discipline} />
         </Suspense>
       </section>
 
@@ -109,7 +105,7 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
                   ? "همان روش‌هایی که پشت این آثار است — از طراحی موتیف و تکرار بی‌درز تا رنگ و مقیاس برای کاغذدیواری و پارچه — در قالب دوره، کارگاه و رویداد زنده."
                   : "The same methods behind these works — motif design, seamless repeats, colour and scale for wallpaper and textile — as courses, workshops and live events."
               }
-              href={href(locale, "/academy")}
+              href={`${href(locale, "/academy")}?from=portfolio`}
               hrefLabel={locale === "fa" ? "همه دوره‌های آکادمی" : "All academy courses"}
             />
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -125,6 +121,19 @@ export default async function PortfolioPage({ params }: { params: Promise<{ loca
 
       {/* Closing band — the ways to work with the atelier */}
       <PortfolioCollaboration locale={locale} />
+
+      <StickyCta
+        label={locale === "fa" ? "از دیدن آثار به یادگیری برسید" : "From the work to the craft"}
+        primary={{
+          label: locale === "fa" ? "دوره‌های آکادمی" : "Academy courses",
+          href: `${href(locale, "/academy")}?from=portfolio`,
+        }}
+        secondary={{
+          label: locale === "fa" ? "درخواست همکاری" : "Start a project",
+          href: `${href(locale, "/start")}?from=portfolio`,
+        }}
+        watchId="works"
+      />
     </>
   );
 }

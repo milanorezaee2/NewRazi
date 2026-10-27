@@ -25,6 +25,8 @@ import { AcademyClient, type AcademyClientItem } from "./AcademyClient";
 import { AcademyHeroPreview } from "@/components/academy/AcademyHeroPreview";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { SiteContentBanner } from "@/components/layout/SiteContentBanner";
+import { Testimonials } from "@/components/academy/Testimonials";
+import { StickyCta } from "@/components/ui/StickyCta";
 import { PortfolioCard } from "@/components/cards/PortfolioCard";
 import { enrichPortfolio } from "@/lib/data/queries";
 import { isPublishedPortfolio, isStudioPortfolio } from "@/lib/artist/portfolio";
@@ -532,7 +534,7 @@ export default async function AcademyPage({
                 ? "پروژه‌های اجراشده‌ی آتلیه: طراحی پترن، ساخت پارچه، ترکیب رنگ و فضاهایی که با همین روش‌ها ساخته شده‌اند."
                 : "Realised studio projects: pattern design, textile making, colour and spaces built with these very methods."
             }
-            href={href(locale, "/portfolio")}
+            href={`${href(locale, "/portfolio")}?from=academy`}
             hrefLabel={isFA ? "دیدن همه آثار" : "See all works"}
           />
           <div className="mt-10 grid gap-5 md:grid-cols-3">
@@ -546,6 +548,9 @@ export default async function AcademyPage({
           </div>
         </section>
       )}
+
+      {/* ── Student quotes (admin-managed; hidden until real ones exist) ── */}
+      <Testimonials testimonials={site.testimonials} locale={locale} className="container-x py-16" />
 
       {/* ── Process steps ─────────────────────────────────────── */}
       <section className="bg-background-secondary">
@@ -598,6 +603,17 @@ export default async function AcademyPage({
         </div>
       </section>
 
+      <StickyCta
+        label={isFA ? "از آموزش به آثار واقعی" : "From the course to real work"}
+        primary={{
+          label: isFA ? "دیدن آثار آتلیه" : "See the studio's work",
+          href: `${href(locale, "/portfolio")}?from=academy`,
+        }}
+        secondary={{
+          label: isFA ? "درخواست همکاری" : "Start a project",
+          href: `${href(locale, "/start")}?from=academy`,
+        }}
+      />
     </>
   );
 }

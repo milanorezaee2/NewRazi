@@ -11,6 +11,7 @@ const l = (fa: string, en: string): Localized => ({ fa, en });
 /** Public, stable routes whose metadata is managed by the main admin SEO tab. */
 export const SEO_ROUTE_DEFAULTS: readonly SeoRouteDefinition[] = [
   { path: "/portfolio", label: "پورتفولیو", title: l("پورتفولیو — آتلیه رزی", "Portfolio — Rosie Atelier"), description: l("آثار منتخب و روایت‌های طراحی راضیه خیری‌پور: پترن، پارچه، رنگ و فضا.", "Selected works and design stories by Razieh Kheiripour: pattern, textile, colour and space.") },
+  { path: "/start", label: "شروع", title: l("شروع همکاری — آتلیه رزی", "Start — Rosie Atelier"), description: l("یاد بگیرید، اثر سفارش دهید یا برای همکاری پیام بفرستید.", "Learn, commission a piece, or get in touch to collaborate.") },
   { path: "/academy", label: "آکادمی", title: l("آکادمی — آتلیه رزی", "Academy — Rosie Atelier"), description: l("آموزش طراحی پترن از مبانی تا کاغذدیواری و پارچه؛ دوره‌ها، کارگاه‌ها و رویدادهای زنده.", "Pattern design education from foundations to wallpaper and textile: courses, workshops and live events.") },
 ];
 
@@ -48,12 +49,19 @@ export function createSeoMetadata(
   const routeDefaults = DEFAULTS_BY_PATH.get(path);
   const title = entry?.title?.[locale]?.trim() || routeDefaults?.title[locale] || fallbackTitle;
   const description = entry?.description?.[locale]?.trim() || routeDefaults?.description[locale] || fallbackDescription;
-  const canonical = `/${locale}${path === "/" ? "" : path.startsWith("/") ? path : `/${path}`}`;
+  const normalized = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
+  const canonical = `/${locale}${normalized}`;
+  /* Both language versions are always published, so declare them explicitly. */
+  const languages = {
+    fa: `/fa${normalized}`,
+    en: `/en${normalized}`,
+    "x-default": `/fa${normalized}`,
+  };
 
   return {
     title: { absolute: title },
     ...(description ? { description } : {}),
-    alternates: { canonical },
+    alternates: { canonical, languages },
     openGraph: {
       type: "website",
       title,

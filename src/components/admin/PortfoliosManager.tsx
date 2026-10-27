@@ -73,6 +73,22 @@ function makeSlug(title: string) {
     .slice(0, 60);
 }
 
+/** ISO → `datetime-local` value in the browser's timezone. */
+function toDateTimeLocal(iso?: string): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** `datetime-local` → ISO string (or undefined when cleared/invalid). */
+function fromDateTimeLocal(value: string): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
 function localized(value?: Localized): Localized {
   return { fa: value?.fa ?? "", en: value?.en ?? "" };
 }
@@ -341,7 +357,97 @@ function PortfolioEditDrawer({
                 پروژه
               </label>
             </div>
+            <Field label="زمان انتشار (خالی = فوری)" className="min-w-[210px]">
+              <Input
+                type="datetime-local"
+                value={toDateTimeLocal(form.publishAt)}
+                onChange={(event) => set("publishAt", fromDateTimeLocal(event.target.value))}
+              />
+            </Field>
+            {form.publishAt && (
+              <p className="pt-5 text-caption text-muted">
+                {Number(Date.parse(form.publishAt)) > Date.now()
+                  ? "این کار تا زمان تعیین‌شده در سایت نمایش داده نمی‌شود."
+                  : "زمان انتشار گذشته است؛ کار منتشر شده است."}
+              </p>
+            )}
             {form.draftStatus === "rejected" && <Field label="دلیل رد (اختیاری)"><Textarea value={form.rejectionNote ?? ""} onChange={(event) => set("rejectionNote", event.target.value)} /></Field>}
+          </div>
+
+          {/* Case study — problem / process / outcome / tools */}
+          <div className="rounded-xl border border-border p-4">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-foreground">مطالعهٔ موردی (اختیاری)</h3>
+              {!form.caseStudy && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => set("caseStudy", { problem: localized(), outcome: localized(), process: [], outcomeMetrics: [], tools: [] } as Portfolio["caseStudy"])}
+                >
+                  افزودن مطالعهٔ موردی
+                </Button>
+              )}
+            </div>
+            {form.caseStudy && (
+              <div className="space-y-4">
+                <LocalizedField
+                  label="مسئله"
+                  textarea
+                  value={form.caseStudy.problem ?? localized()}
+                  onChange={(value) => set("caseStudy", { ...form.caseStudy!, problem: value })}
+                />
+                <LocalizedField
+                  label="نتیجه"
+                  textarea
+                  value={form.caseStudy.outcome ?? localized()}
+                  onChange={(value) => set("caseStudy", { ...form.caseStudy!, outcome: value })}
+                />
+                <Field label="فرایند — هر خط: عنوان | توضیح">
+                  <Textarea
+                    rows={4}
+                    value={(form.caseStudy.process ?? []).map((step) => `${step.title.fa} | ${step.text.fa}`).join("\n")}
+                    onChange={(event) => set("caseStudy", {
+                      ...form.caseStudy!,
+                      process: event.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+                        const [title, ...rest] = line.split("|");
+                        const text = rest.join("|").trim();
+                        return { title: localized({ fa: title.trim(), en: title.trim() }), text: localized({ fa: text, en: text }) };
+                      }),
+                    })}
+                  />
+                </Field>
+                <Field label="سنجه‌های نتیجه — هر خط: برچسب | مقدار">
+                  <Textarea
+                    rows={3}
+                    value={(form.caseStudy.outcomeMetrics ?? []).map((metric) => `${metric.label.fa} | ${metric.value}`).join("\n")}
+                    onChange={(event) => set("caseStudy", {
+                      ...form.caseStudy!,
+                      outcomeMetrics: event.target.value.split("\n").map((line) => line.trim()).filter(Boolean).map((line) => {
+                        const [label, ...rest] = line.split("|");
+                        const text = label.trim();
+                        return { label: { fa: text, en: text }, value: rest.join("|").trim() };
+                      }),
+                    })}
+                  />
+                </Field>
+                <Field label="ابزارها و متریال — با کاما جدا کنید">
+                  <Input
+                    value={(form.caseStudy.tools ?? []).join("، ")}
+                    onChange={(event) => set("caseStudy", {
+                      ...form.caseStudy!,
+                      tools: event.target.value.split(/[،,]/).map((tool) => tool.trim()).filter(Boolean),
+                    })}
+                  />
+                </Field>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => set("caseStudy", undefined)}
+                >
+                  حذف مطالعهٔ موردی
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Title & Slug */}
