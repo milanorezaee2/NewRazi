@@ -149,7 +149,7 @@ export function PortfolioCollaboration({ locale }: { locale: Locale }) {
   const c = RAZIEH_PROFILE.collaboration;
 
   return (
-    <section className="border-t border-border bg-background-secondary">
+    <section className="border-t border-border">
       <div className="container-x section-y flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl">
           <h2 className="font-display text-h3 text-balance">{t(c.title, locale)}</h2>

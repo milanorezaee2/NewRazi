@@ -635,8 +635,11 @@ html[lang="fa"] .text-label {
 .ab-marquee-track.ab-marquee-ltr { animation-name: ab-marquee-ltr; }
 .ab-marquee-track.ab-marquee-soft { animation-duration: 20s; }
 
-/* Scroll reveal (driven by <Reveal/>) */
-[data-reveal] {
+/* ── Scroll reveal (driven by <Reveal/>) ─────────────────────────────────────
+   Content is visible by default. Only content that the script has confirmed is
+   below the fold gets the hidden start state, so a slow or failed hydration can
+   never leave a page blank or faded. */
+[data-reveal][data-reveal-hidden] {
   opacity: 0;
   transform: translateY(20px);
   transition:
@@ -645,10 +648,10 @@ html[lang="fa"] .text-label {
     filter 700ms var(--ease-out);
   transition-delay: var(--reveal-delay, 0ms);
 }
-[data-reveal="blur"] {
+[data-reveal-hidden][data-reveal="blur"] {
   filter: blur(8px);
 }
-[data-reveal].is-visible {
+[data-reveal][data-reveal-hidden].is-visible {
   opacity: 1;
   transform: none;
   filter: none;
@@ -665,7 +668,7 @@ html[lang="fa"] .text-label {
     transform: none;
     white-space: normal;
   }
-  [data-reveal] {
+  [data-reveal][data-reveal-hidden] {
     opacity: 1;
     transform: none;
     filter: none;

@@ -1,5 +1,4 @@
 import type { Locale } from "@/lib/i18n/types";
-import { faNum } from "@/lib/utils";
 
 interface TrustWork {
   client: { fa: string; en: string };
@@ -36,35 +35,35 @@ export function TrustBar({ works, locale }: { works: TrustWork[]; locale: Locale
   const cities = [...new Set(works.map((work) => label(work.location, locale)).filter(Boolean))];
   const projects = works.filter((work) => work.isProject).length;
 
-  const stats = [
-    { value: projects, label: fa ? "پروژهٔ اجراشده" : "Realised projects" },
-    { value: clients.length, label: fa ? "کارفرمای نام‌دار" : "Named clients" },
-    { value: disciplines.length, label: fa ? "حوزهٔ طراحی" : "Disciplines" },
-    { value: cities.length, label: fa ? "شهر" : "Cities" },
-  ].filter((stat) => stat.value > 0);
+  if (!clients.length && !disciplines.length) return null;
 
-  if (!stats.length) return null;
-
+  /*
+   * A slim strip rather than a second statistics band: the introduction above
+   * already carries the headline numbers, so this row only names the clients and
+   * disciplines that back them.
+   */
   return (
-    <section className="border-y border-border bg-background-secondary">
-      <div className="container-x py-10">
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="text-center sm:text-start">
-              <p className="font-display text-h2 tabular-nums leading-none text-foreground">
-                {fa ? faNum(stat.value) : stat.value}
-              </p>
-              <p className="mt-2 text-caption text-muted">{stat.label}</p>
-            </div>
-          ))}
-        </div>
-
+    <section className="border-y border-border bg-background-secondary" aria-label={fa ? "کارفرمایان و حوزه‌ها" : "Clients and disciplines"}>
+      <div className="container-x flex flex-wrap items-center gap-x-8 gap-y-2 py-5 text-caption">
         {clients.length > 0 && (
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-6">
-            <p className="text-label text-muted">{fa ? "کارفرمایان" : "Clients"}</p>
-            <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-foreground-secondary">
-              {clients.map((client) => (
-                <li key={client}>{client}</li>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-label text-muted">{fa ? "کارفرمایان" : "Clients"}</span>
+            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-foreground-secondary">
+              {clients.map((client, index) => (
+                <li key={client} className="flex items-center gap-3">
+                  {index > 0 && <span aria-hidden className="h-1 w-1 rounded-full bg-border" />}
+                  {client}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {disciplines.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span className="text-label text-muted">{fa ? "حوزه‌ها" : "Disciplines"}</span>
+            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-foreground-secondary">
+              {disciplines.map((discipline) => (
+                <li key={discipline}>{discipline}</li>
               ))}
             </ul>
           </div>
