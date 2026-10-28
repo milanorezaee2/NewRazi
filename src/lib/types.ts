@@ -247,6 +247,48 @@ export interface PortfolioBlock {
 
 export type DraftStatus = "draft" | "pending_review" | "published" | "rejected";
 
+/** One step of the case study: what was done and why (admin-authored, bilingual). */
+export interface CaseStudyStep {
+  title: Localized;
+  text: Localized;
+  /** Optional supporting image from the work's gallery or an uploaded file. */
+  image?: string;
+}
+
+/** A measured result shown as a big number next to a short label. */
+export interface CaseStudyMetric {
+  label: Localized;
+  value: string;
+}
+
+/**
+ * Case-study layer of a portfolio work: problem → process → outcome → tools.
+ * Everything is optional so legacy records keep rendering as a plain gallery.
+ */
+export interface CaseStudy {
+  problem?: Localized;
+  process?: CaseStudyStep[];
+  outcome?: Localized;
+  outcomeMetrics?: CaseStudyMetric[];
+  /** Free-form tool/material names, shown as chips. */
+  tools?: string[];
+}
+
+/** Admin-authored student quote. Only rendered when an admin adds one. */
+export interface Testimonial {
+  id: ID;
+  /** Person's display name. */
+  name: string;
+  /** Course/workshop they attended, used for the sub-line. */
+  course?: Localized;
+  quote: Localized;
+  /** 1–5, optional. */
+  rating?: number;
+  /** Academy slug the quote belongs to; empty means "shown on the academy page". */
+  educationSlug?: string;
+  featured?: boolean;
+}
+
 export interface Portfolio {
   /** Public placement. Legacy CMS records default to site; artist submissions stay in artist portfolios. */
   showcase?: "site" | "artist";
@@ -278,6 +320,13 @@ export interface Portfolio {
    */
   draftStatus?: DraftStatus;
   rejectionNote?: string;
+  /** Structured case study rendered between the intro and the story blocks. */
+  caseStudy?: CaseStudy;
+  /**
+   * Optional release time (ISO string). A future value keeps the work out of
+   * every public surface until the moment arrives — see isPublishedPortfolio.
+   */
+  publishAt?: string;
 }
 
 /**
@@ -308,6 +357,8 @@ export interface AcademyReservation {
   /** Whether an administrator or a free enrolment has granted protected course/live access. */
   accessGranted?: boolean;
   reminderSentAt?: string;
+  /** Where the enrollment came from (?from=…): portfolio, academy, direct, … */
+  source?: string;
 }
 
 export type LiveEventStatus = "scheduled" | "live" | "ended" | "cancelled";
@@ -453,6 +504,8 @@ export interface EducationItem {
   /** Same draft/publish workflow as Portfolio */
   draftStatus?: DraftStatus;
   rejectionNote?: string;
+  /** Optional release time (ISO string); future values stay public-invisible. */
+  publishAt?: string;
 }
 
 export interface Story {
@@ -671,6 +724,10 @@ export interface SiteContent {
   financialConfig?: FinancialConfig;
   /** تنظیمات هیرو صفحه پورتفولیو */
   portfolioHero?: PortfolioHeroSettings;
+  /** نظرات هنرجویان — فقط وقتی مدیر آکادمی چیزی اضافه کند نمایش داده می‌شود */
+  testimonials?: Testimonial[];
+  /** کنترل صفحه‌ها (هیرو سینمایی و ترتیب/نمایش بخش‌ها) — فقط از پنل مدیریت */
+  pages?: Partial<import("@/lib/page-settings").PagesSettings>;
 }
 
 export type CollectionKey = Exclude<keyof SiteContent, "hero">;

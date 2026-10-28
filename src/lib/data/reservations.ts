@@ -226,6 +226,8 @@ export async function createReservation(input: {
   email: string;
   accessGranted?: boolean;
   paymentRequired?: boolean;
+  /** Which page sent the visitor here (`portfolio`, `academy`, `start`, …). */
+  source?: string;
 }) {
   const email = input.email.trim().toLowerCase();
   const capacity = Number.isFinite(input.capacity) ? Math.max(0, Math.floor(input.capacity)) : 0;
@@ -242,6 +244,7 @@ export async function createReservation(input: {
     status: "reserved",
     ...(input.accessGranted !== undefined ? { accessGranted: input.accessGranted } : {}),
     ...(input.paymentRequired !== undefined ? { paymentRequired: input.paymentRequired } : {}),
+    ...(input.source ? { source: input.source } : {}),
   };
 
   if (redisEnabled()) {

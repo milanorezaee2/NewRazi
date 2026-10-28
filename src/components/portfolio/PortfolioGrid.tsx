@@ -3,6 +3,7 @@
 import Image from "@/components/ui/SiteImage";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { useLocale } from "@/components/providers/AppProviders";
 import { Reveal } from "@/components/ui/Reveal";
@@ -13,11 +14,29 @@ import type { Category } from "@/lib/types";
 interface Props {
   items: EnrichedPortfolio[];
   categories: Category[];
+  /** Category slug from `?discipline=` — makes a filtered view shareable. */
+  initialDiscipline?: string;
 }
 
-export function PortfolioGrid({ items, categories }: Props) {
+export function PortfolioGrid({ items, categories, initialDiscipline }: Props) {
   const { locale, dict } = useLocale();
-  const [active, setActive] = useState<string>("all");
+  const router = useRouter();
+  const pathname = usePathname();
+  const initial = initialDiscipline
+    ? categories.find((category) => category.slug === initialDiscipline)?.id ?? "all"
+    : "all";
+  const [active, setActive] = useState<string>(initial);
+
+  /** Keep the URL in sync so a filtered gallery can be linked, shared and indexed. */
+  function select(id: string) {
+    setActive(id);
+    const slug = categories.find((category) => category.id === id)?.slug;
+    const params = new URLSearchParams(window.location.search);
+    if (slug) params.set("discipline", slug);
+    else params.delete("discipline");
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }
 
   const sorted = active === "all" ? items : items.filter((c) => c.categoryId === active);
   const activeCategory = categories.find((category) => category.id === active);
@@ -30,7 +49,8 @@ export function PortfolioGrid({ items, categories }: Props) {
         {[{ id: "all", label: dict.common.all }, ...categories.map((category) => ({ id: category.id, label: t(category.name, locale) }))].map((filter) => (
           <button
             key={filter.id}
-            onClick={() => setActive(filter.id)}
+            onClick={() => select(filter.id)}
+            aria-pressed={active === filter.id}
             className={cn(
               "rounded-full border px-4 py-2 text-sm transition-colors",
               active === filter.id

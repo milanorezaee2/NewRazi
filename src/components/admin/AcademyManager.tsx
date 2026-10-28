@@ -31,6 +31,7 @@ import {
   WifiOff,
   X,
   Zap,
+  Quote,
 } from "lucide-react";
 import Link from "next/link";
 import { cn, href, t } from "@/lib/utils";
@@ -38,6 +39,7 @@ import { effectiveLiveStatus, isFreePrice, safeExternalHttpsUrl } from "@/lib/ac
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
 import { AcademyAnalytics } from "@/components/admin/AcademyAnalytics";
+import { TestimonialsEditor } from "@/components/admin/TestimonialsEditor";
 import type {
   AcademyReservation,
   Artist,
@@ -196,7 +198,7 @@ function FaField({
   );
 }
 
-/** Small image uploader with preview — returns public URL via /api/artist/upload. */
+/** Small image uploader with preview — returns public URL via /api/admin/upload. */
 function ImagePicker({
   label, value, onChange, size = 72,
 }: {
@@ -215,7 +217,7 @@ function ImagePicker({
     try {
       const form = new FormData();
       form.append("file", file);
-      const response = await fetch("/api/artist/upload", {
+      const response = await fetch("/api/admin/upload", {
         method: "POST",
         credentials: "include",
         body: form,
@@ -1573,6 +1575,22 @@ const BLANK_BASE: Omit<EducationItem, "id" | "slug" | "type" | "liveEvent" | "vi
   draftStatus: "published",
 };
 
+/** ISO → `datetime-local` in the browser's timezone. */
+function toDateTimeLocal(iso?: string): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** `datetime-local` → ISO string, or undefined when cleared. */
+function fromDateTimeLocal(value: string): string | undefined {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
 const TYPE_COLORS: Record<EducationType, { border: string; bg: string; text: string; icon: React.ReactNode }> = {
   course: { border: "border-blue-400", bg: "bg-blue-50", text: "text-blue-700", icon: <GraduationCap className="h-4 w-4" /> },
   workshop: { border: "border-emerald-400", bg: "bg-emerald-50", text: "text-emerald-700", icon: <Mic2 className="h-4 w-4" /> },
@@ -1742,7 +1760,7 @@ function ItemDrawer({
             </div>
           )}
 
-          {/* ── Draft status ── */}
+          {/* ── Draft status + scheduling ── */}
           <Field label="وضعیت انتشار">
             <Select
               value={form.draftStatus ?? "published"}
@@ -1754,6 +1772,20 @@ function ItemDrawer({
               <option value="rejected">رد شده</option>
             </Select>
           </Field>
+          <Field label="زمان انتشار (خالی = فوری)">
+            <Input
+              type="datetime-local"
+              value={toDateTimeLocal(form.publishAt)}
+              onChange={(e) => set("publishAt", fromDateTimeLocal(e.target.value))}
+            />
+          </Field>
+          {form.publishAt && (
+            <p className="text-[11px] text-muted">
+              {Number(Date.parse(form.publishAt)) > Date.now()
+                ? "تا این زمان در سایت دیده نمی‌شود."
+                : "زمان انتشار گذشته است؛ محتوا منتشر شده است."}
+            </p>
+          )}
 
           {/* ── اطلاعات پایه (مشترک همه انواع) ── */}
           <div className={cn(
@@ -2238,13 +2270,14 @@ function StatsBar({ items, registrationsBySlug, now }: { items: EducationItem[];
    MAIN — AcademyManager
    ═══════════════════════════════════════════════════════════════ */
 
-type PanelTab = "course" | "workshop" | "webinar" | "analytics";
+type PanelTab = "course" | "workshop" | "webinar" | "testimonials" | "analytics";
 type FilterStatus = "all" | "live" | "free" | "pending";
 
 const PANEL_TABS: { id: PanelTab; label: string; icon: React.ReactNode; color: string }[] = [
   { id: "course",    label: "دوره‌های آموزشی", icon: <GraduationCap className="h-4 w-4" />, color: "blue" },
   { id: "workshop",  label: "ورکشاپ‌ها",       icon: <Mic2 className="h-4 w-4" />,         color: "emerald" },
   { id: "webinar",   label: "وبینارها",         icon: <Radio className="h-4 w-4" />,        color: "rose" },
+  { id: "testimonials", label: "نقل‌قول هنرجویان", icon: <Quote className="h-4 w-4" />,     color: "amber" },
   { id: "analytics", label: "آمار و گزارش",    icon: <BarChart2 className="h-4 w-4" />,    color: "purple" },
 ];
 
@@ -2333,6 +2366,7 @@ export function AcademyManager({
     emerald: "bg-emerald-600",
     rose:    "bg-rose-600",
     purple:  "bg-purple-600",
+    amber:   "bg-amber-600",
   };
 
   return (
@@ -2348,7 +2382,7 @@ export function AcademyManager({
             دوره‌های آموزشی، ورکشاپ‌ها (آنلاین و حضوری) و وبینارهای زنده را مدیریت کنید.
           </p>
         </div>
-        {!isAnalytics && (
+        {!isAnalytics && panel !== "testimonials" && (
           <Button onClick={() => setEditItem("new")} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             افزودن به «{TYPE_LABELS[panel as "course" | "workshop" | "webinar"]}»
@@ -2409,10 +2443,19 @@ export function AcademyManager({
         })}
       </div>
 
+      {/* ── Student quotes ── */}
+      {panel === "testimonials" ? (
+        <TestimonialsEditor
+          testimonials={data.testimonials ?? []}
+          education={education}
+          onChange={(testimonials) => update({ testimonials })}
+        />
+      ) : null}
+
       {/* ── Analytics tab ── */}
       {isAnalytics ? (
         <AcademyAnalytics items={education} locale={locale} registrationsBySlug={registrationCounts} />
-      ) : (
+      ) : panel === "testimonials" ? null : (
         <>
           {/* Filter + Search bar */}
           <div className="flex flex-wrap items-center gap-2">
@@ -2484,7 +2527,7 @@ export function AcademyManager({
           registeredCount={editItem === "new" ? 0 : registrationCounts ? registrationCounts[editItem.slug] ?? 0 : editItem.liveEvent?.registeredCount ?? 0}
           onSave={handleSave}
           onClose={() => setEditItem(null)}
-          defaultType={panel === "analytics" ? "course" : panel}
+          defaultType={panel === "analytics" || panel === "testimonials" ? "course" : panel}
         />
       )}
     </div>

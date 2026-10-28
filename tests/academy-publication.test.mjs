@@ -36,19 +36,13 @@ test("public academy surfaces consistently apply the publication filter", () => 
     ["src/app/[locale]/academy/page.tsx", /publicEducationItems\(site\.education\)/],
     ["src/app/[locale]/academy/[slug]/page.tsx", /isPublishedEducation/],
     ["src/app/[locale]/academy/[slug]/live/page.tsx", /isPublishedEducation/],
-    ["src/app/[locale]/page.tsx", /publicEducationItems\(site\.education\)/],
-    ["src/app/[locale]/search/page.tsx", /publicEducationItems\(site\.education\)/],
-    ["src/app/sitemap.ts", /publicEducationItems\(site\.education\)/],
-    ["src/app/api/search-index/route.ts", /publicEducationItems\(site\.education\)/],
+    ["src/app/sitemap.ts", /publicEducationItems\(content\.education\)/],
     ["src/app/api/academy/enroll/route.ts", /isPublishedEducation/],
     ["src/app/api/academy/videos/[id]/route.ts", /isPublishedEducation/],
     ["src/app/api/webinar/[slug]/stream/route.ts", /isPublishedEducation/],
     ["src/app/api/webinar/[slug]/signal/route.ts", /isPublishedEducation/],
-    ["src/components/layout/AnnouncementBarServer.tsx", /publicEducationItems\(site\.education\)/],
     ["src/lib/data/academy.ts", /publicEducationItems\(site\.education\)/],
     ["src/lib/data/enrich.ts", /publicEducationItems\(site\.education\)/],
-    ["src/lib/data/founder-statistics.ts", /publicEducationItems\(site\.education\)/],
-    ["src/lib/data/nav.ts", /publicEducationItems\(site\.education\)/],
   ];
   for (const [file, pattern] of checks) assert.match(fs.readFileSync(file, "utf8"), pattern, file);
 });

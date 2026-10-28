@@ -4,8 +4,9 @@ import path from "path";
 import { assertSiteContentRelations } from "@/lib/admin-content-validation";
 import crypto from "crypto";
 import { seedContent } from "./seed";
-import type { CollectionKey, SiteContent } from "../types";
+import type { CollectionKey, Portfolio, SiteContent } from "../types";
 import { rewriteLegacyMediaUrls } from "@/lib/media-storage";
+import { resolvePages } from "@/lib/page-settings";
 import { backfillLegacyPatternStatuses } from "../pattern-status";
 import { RAZIEH_TEXTILE_CATEGORY, RAZIEH_TEXTILE_PORTFOLIO } from "./razieh-textile-portfolio";
 
@@ -285,6 +286,20 @@ function migrateRaziehTextilePortfolio(content: SiteContent): SiteContent {
   };
 }
 
+/**
+ * Documents written before case studies existed keep their curated seed case
+ * study. Editorial content the admin already saved (title, body, media) is left
+ * exactly as stored — only the missing `caseStudy` block is filled in.
+ */
+function backfillSeedCaseStudies(portfolios: Portfolio[]): Portfolio[] {
+  const seedById = new Map(seedContent.portfolios.map((item) => [item.id, item]));
+  return portfolios.map((portfolio) => {
+    if (portfolio.caseStudy) return portfolio;
+    const seeded = seedById.get(portfolio.id)?.caseStudy;
+    return seeded ? { ...portfolio, caseStudy: seeded } : portfolio;
+  });
+}
+
 function prepareContent(content: SiteContent): SiteContent {
   const migrated = migrateRaziehTextilePortfolio(normalizeEventHosts(content));
   const normalized = {
@@ -298,6 +313,11 @@ function prepareContent(content: SiteContent): SiteContent {
   return rewriteLegacyMediaUrls({
     ...normalized,
     patterns: backfillLegacyPatternStatuses(normalized.patterns ?? []),
+    /* New optional collections default to an empty list rather than `undefined`. */
+    testimonials: Array.isArray(normalized.testimonials) ? normalized.testimonials : [],
+    /* Page control always resolves to a complete document with shipped defaults. */
+    pages: resolvePages(normalized.pages),
+    portfolios: backfillSeedCaseStudies(normalized.portfolios ?? []),
   });
 }
 

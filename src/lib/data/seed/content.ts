@@ -34,6 +34,27 @@ export const portfolios: Portfolio[] = [
     client: L("خصوصی", "Private"), location: L("تهران، الهیه", "Tehran, Elahieh"), year: 2025,
     scope: L("طراحی اختصاصی، تولید، نصب", "Bespoke design, production, installation"),
     categoryId: "cat-persian", featured: true, isProject: true, size: "hero",
+    caseStudy: {
+      problem: L(
+        "پنجره‌های قوسی نور صبح را مستقیم روی دیوار می‌انداختند؛ هر پترن پرکنتراست در آن نور سرد و تصنعی دیده می‌شد و با مبلمان روشن فضا رقابت می‌کرد.",
+        "The arched windows threw morning light straight onto the wall; any high-contrast pattern looked cold and synthetic there and competed with the pale furniture.",
+      ),
+      process: [
+        { title: L("تحلیل نور", "Light study"), text: L("دو ساعت از روز در سه فصل اندازه‌گیری شد تا زاویه و دمای نور در محل پترن مشخص شود.", "The room was measured at two hours across three seasons to map light angle and temperature on the pattern wall.") },
+        { title: L("ساخت رنگ‌بندی", "Colourway build"), text: L("زمینه‌ی اسلیت با سه پله روشن‌تر و خطوط مسی مات انتخاب شد تا در نور مستقیم نسوزد.", "The slate ground was lifted three steps and the copper linework kept matte so it does not burn out in direct light.") },
+        { title: L("نمونه‌ی مقیاس‌واقعی", "Full-scale sample"), text: L("یک پانل ۲×۲ متر روی همان دیوار نصب و در سه نوبت بازبینی شد.", "A 2×2 m panel was installed on the same wall and reviewed on three separate visits.") },
+      ],
+      outcome: L(
+        "پترن در طول روز سه حالت متفاوت دارد و هیچ‌کدام شلوغ نیست؛ فضا بدون تغییر مبلمان بزرگ‌تر خوانده می‌شود.",
+        "The pattern reads differently across the day and never feels busy; the room appears larger without touching a single piece of furniture.",
+      ),
+      outcomeMetrics: [
+        { label: L("مساحت اجرا", "Installed area"), value: "۲۸۰ m²" },
+        { label: L("مرحله رنگ‌بندی", "Colourway rounds"), value: "۳" },
+        { label: L("زمان نصب", "Installation"), value: "۱۸ " + "روز" },
+      ],
+      tools: ["Adobe Illustrator", "Pantone TPG", "Non-woven 200gsm"],
+    },
   },
   {
     id: "portfolio-hotel-narenjestan",
@@ -53,6 +74,27 @@ export const portfolios: Portfolio[] = [
     client: L("هتل بوتیک نارنجستان", "Narenjestan Boutique Hotel"), location: L("تهران", "Tehran"), year: 2025,
     scope: L("طراحی پترن، کاغذدیواری تجاری، پرده، نصب", "Pattern design, commercial wallpaper, curtains, installation"),
     categoryId: "cat-luxury", featured: true, isProject: true, size: "tall",
+    caseStudy: {
+      problem: L(
+        "لابی با سقف بلند و آویزهای متعدد در شب زیاد و در روز خالی دیده می‌شد؛ پترن باید در هر دو حالت وزن بصری یکسانی داشت.",
+        "The tall lobby with multiple pendants looked crowded at night and empty by day; the pattern had to hold the same visual weight in both states.",
+      ),
+      process: [
+        { title: L("مودبورد شب", "Night board"), text: L("پترن در نور واقعی آویزها شبیه‌سازی شد تا عمق خطوط مسی سنجیده شود.", "The pattern was simulated under the real pendant lighting to judge the depth of the copper lines.") },
+        { title: L("مشبک ایرانی", "Persian lattice"), text: L("هندسه‌ی مشبک با تکرار ۳۲ سانتی‌متر ساده شد تا از فاصله‌ی پذیرش خوانا بماند.", "The lattice geometry was simplified at a 32 cm repeat so it stays legible from the reception desk.") },
+        { title: L("متریال تجاری", "Commercial substrate"), text: L("وینیل ضدخش کلاس B1 برای مسیر پرتردد و مقاومت در برابر شست‌وشو انتخاب شد.", "Class B1 anti-scratch vinyl was chosen for the high-traffic route and wash-down resistance.") },
+      ],
+      outcome: L(
+        "لابی در شب عمق پیدا می‌کند و در روز آرام است؛ سطح در ۱۴ ماه بهره‌برداری هیچ آسیب موضعی نداشته.",
+        "The lobby gains depth at night and calms by day; after fourteen months of use the surface shows no localised damage.",
+      ),
+      outcomeMetrics: [
+        { label: L("مساحت", "Area"), value: "۱۴۰ m²" },
+        { label: L("زمان اجرا", "Delivery"), value: "۲۶ " + "روز" },
+        { label: L("کلاس آتش", "Fire class"), value: "B1" },
+      ],
+      tools: ["Rhino", "Illustrator", "Class B1 vinyl"],
+    },
   },
   {
     id: "portfolio-villa-lavasan",
@@ -70,6 +112,27 @@ export const portfolios: Portfolio[] = [
     client: L("خصوصی", "Private"), location: L("لواسان", "Lavasan"), year: 2024,
     scope: L("کاغذدیواری و پارچه سفارشی", "Bespoke wallpaper & fabric"),
     categoryId: "cat-floral", featured: true, isProject: false, size: "square",
+    caseStudy: {
+      problem: L(
+        "دیوار پشت تخت فقط از فاصله‌ی ۴۰ سانتی‌متر دیده می‌شود؛ تکرارهای کوچک از آن فاصله به نویز تبدیل می‌شدند.",
+        "The headboard wall is only ever seen from 40 cm away, where small repeats turn into noise.",
+      ),
+      process: [
+        { title: L("تعیین مقیاس", "Scale test"), text: L("سه مقیاس چاپ شد و از فاصله‌ی واقعی تخت مقایسه شد؛ ۹۶ سانتی‌متر انتخاب شد.", "Three scales were printed and compared from the real bed distance; 96 cm won.") },
+        { title: L("تنظیم آب‌رنگ", "Watercolour tuning"), text: L("لبه‌های گل با شفافیت کنترل‌شده چاپ شد تا بافت دستی زیر نور حفظ شود.", "Petal edges were printed with controlled transparency so the hand-painted texture survives the light.") },
+        { title: L("کاغذ بافت‌دار", "Textured paper"), text: L("کاغذ مات با بافت ملایم انتخاب شد تا انعکاس نور کنار تخت حذف شود.", "A matte, softly textured paper removes reflections beside the bed.") },
+      ],
+      outcome: L(
+        "از فاصله‌ی تخت، گل‌ها بی‌تکرار و آرام دیده می‌شوند؛ از در ورودی، دیوار یک سطح رنگی یکدست است.",
+        "From the bed the flowers are calm and unresolvable; from the doorway the wall reads as one continuous colour field.",
+      ),
+      outcomeMetrics: [
+        { label: L("تکرار", "Repeat"), value: "۹۶ cm" },
+        { label: L("مساحت", "Area"), value: "۲۲ m²" },
+        { label: L("نصب", "Install"), value: "۵ " + "روز" },
+      ],
+      tools: ["Gouache scans", "Photoshop", "Textured matte paper"],
+    },
   },
   {
     id: "portfolio-cafe-sangfarsh",
@@ -87,6 +150,27 @@ export const portfolios: Portfolio[] = [
     client: L("کافه سنگ‌فرش", "Sangfarsh Café"), location: L("کرج", "Karaj"), year: 2024,
     scope: L("طراحی پترن، چاپ پانل سفارشی", "Pattern design, custom panel print"),
     categoryId: "cat-abstract", featured: true, isProject: true, size: "wide",
+    caseStudy: {
+      problem: L(
+        "دیوار بتنی در نور کمِ عصر تقریباً سیاه می‌شد و لکه‌های قهوه روی سطح مات قابل پاک‌شدن نبود.",
+        "The concrete wall went almost black in the low afternoon light, and coffee spills on a matte surface could not be cleaned.",
+      ),
+      process: [
+        { title: L("پانل بدون تکرار", "No-repeat panel"), text: L("به‌جای تکرار، یک پانل ۵ متری اختصاصی طراحی شد تا دیوار مثل یک اثر خوانده شود.", "Instead of a repeat, a single 5 m panel was drawn so the wall reads as one artwork.") },
+        { title: L("پالت گرم", "Warm palette"), text: L("مشکی صفر-تا-صد با شنی و مسی ترکیب شد تا در نور کم عمق بماند.", "A true black was mixed with sand and copper so the wall holds depth in low light.") },
+        { title: L("پوشش ضدلک", "Anti-stain film"), text: L("وینیل مات با پوشش ضدلک و درزهای پنهان در محل اجرا شد.", "Matte vinyl with an anti-stain coating and concealed seams was installed on site.") },
+      ],
+      outcome: L(
+        "دیوار در عصر عمق پیدا می‌کند و لکه‌ها با یک دستمال مرطوب پاک می‌شوند؛ خود دیوار به نقطه‌ی عکس‌گرفتن کافه تبدیل شد.",
+        "The wall gains depth at dusk, spills wipe off with a damp cloth, and the wall itself became the café's photo spot.",
+      ),
+      outcomeMetrics: [
+        { label: L("مساحت", "Area"), value: "۱۸ m²" },
+        { label: L("اجرا", "Install"), value: "۳ " + "روز" },
+        { label: L("تکرار", "Repeat"), value: "—" },
+      ],
+      tools: ["Brush scans", "Illustrator", "Anti-stain vinyl"],
+    },
   },
   {
     id: "portfolio-nursery-moon-cloud",
@@ -104,6 +188,27 @@ export const portfolios: Portfolio[] = [
     client: L("خصوصی", "Private"), location: L("تهران", "Tehran"), year: 2025,
     scope: L("کاغذ دیواری کودک", "Kids wallpaper"),
     categoryId: "cat-kids", featured: true, isProject: false, size: "square",
+    caseStudy: {
+      problem: L(
+        "اتاق نوزاد باید بدون بو و بدون PVC اجرا می‌شد و رنگ‌ها نباید در نور شبانه به خاکستری می‌افتادند.",
+        "The nursery had to be installed odour-free and PVC-free, and the pastels could not collapse into grey under night lighting.",
+      ),
+      process: [
+        { title: L("پالت روز و شب", "Day & night palette"), text: L("رنگ‌ها زیر دو دمای نوری تست شد تا کرم و آبی پودری در هر دو حالت زنده بمانند.", "Colours were tested under two light temperatures so cream and powder blue stay alive in both.") },
+        { title: L("جوهر گرین‌گارد", "GreenGuard ink"), text: L("چاپ با جوهر پایه‌آب و گواهی نشر کم‌آلاینده انجام شد.", "Printed with water-based, low-emission certified inks.") },
+        { title: L("نصب سریع", "Fast install"), text: L("اتاق در دو روز و در نبود ساکنان اجرا و تهویه شد.", "The room was installed and aired over two days while unoccupied.") },
+      ],
+      outcome: L(
+        "اتاق بوی چاپ نمی‌دهد و پترن در نور کم شبانه آرام و خوانا می‌ماند.",
+        "The room carries no print smell, and the pattern stays calm and legible in dim night light.",
+      ),
+      outcomeMetrics: [
+        { label: L("مساحت", "Area"), value: "۱۴ m²" },
+        { label: L("اجرا", "Install"), value: "۲ " + "روز" },
+        { label: L("PVC", "PVC"), value: "۰" },
+      ],
+      tools: ["Watercolour", "Illustrator", "PVC-free non-woven"],
+    },
   },
   {
     id: "portfolio-studio-minimal-office",
@@ -121,6 +226,27 @@ export const portfolios: Portfolio[] = [
     client: L("خصوصی", "Private"), location: L("تهران", "Tehran"), year: 2025,
     scope: L("کاغذ دیواری", "Wallpaper"),
     categoryId: "cat-minimal", featured: false, isProject: true, size: "square",
+    caseStudy: {
+      problem: L(
+        "استودیو تقریباً تمام‌سفید است و تنها یک دیوار می‌توانست بافت بگیرد، بدون آنکه فضای کار سنگین شود.",
+        "The studio is almost entirely white; exactly one wall could take texture without weighing the workplace down.",
+      ),
+      process: [
+        { title: L("شبکه‌ی مویی", "Hairline grid"), text: L("شبکه‌ای با فاصله‌ی ۱۶ سانتی‌متر و ضخامت خط ۰٫۳ میلی‌متر طراحی شد تا از سه متری محو و از نیم‌متری دقیق باشد.", "A 16 cm grid with 0.3 mm lines was drawn to disappear from three metres and stay precise at fifty centimetres.") },
+        { title: L("تنظیم سفیدی", "White tuning"), text: L("سفید پترن با سفید دیوار همراستا شد تا مرز پانل دیده نشود.", "The pattern white was matched to the wall white so the panel edges disappear.") },
+        { title: L("بازبینی در نور کاری", "Work-light review"), text: L("پانل در نور ۴۰۰۰ کلوین دفتر بازبینی شد، نه در نور گالری.", "The panel was reviewed under the office's 4000 K light, not gallery lighting.") },
+      ],
+      outcome: L(
+        "دیوار از فاصله ساختار و از نزدیک جزئیات دارد؛ تمرکز بصری فضا حفظ شد.",
+        "The wall has structure at distance and detail up close, and the room's visual focus is preserved.",
+      ),
+      outcomeMetrics: [
+        { label: L("شبکه", "Grid"), value: "۱۶ cm" },
+        { label: L("دیوار", "Walls"), value: "۱" },
+        { label: L("اجرا", "Install"), value: "۱ " + "روز" },
+      ],
+      tools: ["Illustrator", "Colour proofing", "Minimal matte paper"],
+    },
   },
   RAZIEH_TEXTILE_PORTFOLIO,
 ];

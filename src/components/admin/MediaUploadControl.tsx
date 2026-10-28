@@ -27,7 +27,7 @@ export function MediaUploadControl({
       const form = new FormData();
       form.append("file", file);
       if (isVideo) form.append("fileType", "video");
-      const response = await fetch(isVideo ? "/api/admin/academy/upload-video" : "/api/artist/upload", {
+      const response = await fetch(isVideo ? "/api/admin/academy/upload-video" : "/api/admin/upload", {
         method: "POST",
         credentials: "same-origin",
         body: form,

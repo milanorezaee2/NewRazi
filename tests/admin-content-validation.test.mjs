@@ -188,3 +188,27 @@ test("managed family IDs, slugs, bilingual names and order are validated", () =>
     assert.ok(paths.has(path), `expected taxonomy issue at ${path}`);
   }
 });
+
+test("scheduled publishing accepts ISO dates and rejects anything else", () => {
+  const site = base();
+  site.portfolios[0].publishAt = "2026-11-01T09:00:00.000Z";
+  assert.deepEqual(validateSiteContentRelations(site), []);
+
+  site.portfolios[0].publishAt = "next tuesday";
+  const paths = validateSiteContentRelations(site).map((issue) => issue.path);
+  assert.ok(paths.includes("portfolios[0].publishAt"));
+});
+
+test("testimonials need unique ids and a real course reference", () => {
+  const site = base();
+  site.testimonials = [
+    { id: "t-1", name: "سارا", quote: { fa: "خوب بود", en: "Good" }, educationSlug: "course-1" },
+    { id: "t-1", name: "بدون شناسه", quote: { fa: "تکراری", en: "Duplicate" } },
+  ];
+  const paths = validateSiteContentRelations(site).map((issue) => issue.path);
+  assert.ok(paths.includes("testimonials[1].id"), "duplicate testimonial ids are rejected");
+  assert.ok(paths.includes("testimonials[0].educationSlug"), "unknown course slugs are rejected");
+
+  site.testimonials = [{ id: "t-1", name: "سارا", quote: { fa: "خوب بود", en: "Good" } }];
+  assert.deepEqual(validateSiteContentRelations(site), []);
+});

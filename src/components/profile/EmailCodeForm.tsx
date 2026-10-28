@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { MailCheck, PencilLine, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
-import { RolePicker, type AccountRole } from "./RolePicker";
 import { TermsModal } from "@/components/ui/TermsModal";
 import { useLocale } from "@/components/providers/AppProviders";
 import { withCsrf } from "@/lib/security/csrf-client";
@@ -65,8 +64,6 @@ interface EmailCodeFormProps {
   /** "signup" asks for the terms checkbox and creates the account after verification. */
   entry: "login" | "signup";
   /** Role chosen on the signup form ("artist" asks for a seller account). */
-  role: AccountRole;
-  onRoleChange: (role: AccountRole) => void;
   /** Same-origin path to open after a successful sign-in. */
   returnTo?: string;
   /** Back to the e-mail + password form. */
@@ -84,7 +81,9 @@ interface EmailCodeFormProps {
  * `devCode`, which is shown in a clearly-marked test notice — that is how the
  * flow can be exercised before Resend/SMTP credentials exist.
  */
-export function EmailCodeForm({ entry, role, onRoleChange, returnTo, onBack }: EmailCodeFormProps) {
+export function EmailCodeForm({ entry, returnTo, onBack }: EmailCodeFormProps) {
+  /* Only visitor accounts exist; the e-mail code flow never selects a role. */
+  const role = "user" as const;
   const { locale } = useLocale();
   const fa = locale === "fa";
 
@@ -317,12 +316,6 @@ export function EmailCodeForm({ entry, role, onRoleChange, returnTo, onBack }: E
 
   return (
     <form onSubmit={requestCode} className="space-y-4" noValidate>
-      {entry === "signup" && (
-        <Field label={fa ? "نوع حساب" : "Account type"}>
-          <RolePicker value={role} onChange={onRoleChange} disabled={busy} />
-        </Field>
-      )}
-
       <Field
         label={entry === "signup" ? (fa ? "ایمیل" : "E-mail") : fa ? "ایمیل حساب" : "Account e-mail"}
         hint={

@@ -5,7 +5,7 @@ import fs from 'node:fs';
 test('studio portfolio uses its own media hero and retains its introduction and works', () => {
   const page = fs.readFileSync('src/app/[locale]/portfolio/page.tsx', 'utf8');
   assert.match(page, /<PortfolioHero\s/);
-  assert.match(page, /<PortfolioIntro locale=\{locale\} \/>/);
+  assert.match(page, /<PortfolioIntro key="intro" locale=\{locale\} \/>/);
   assert.match(page, /id="works"/);
   assert.doesNotMatch(page, /<PageHero\s/);
   assert.match(page, /artist-razieh-khairipour/);
@@ -33,8 +33,4 @@ test('portfolio preview offset changes only the desktop video frame dimensions',
   assert.match(css, /@media \(min-width: 1280px\)[\s\S]*?width: calc\(100% \+ var\(--portfolio-video-offset\)\)/);
   assert.match(css, /margin-left: calc\(0px - var\(--portfolio-video-offset\)\)/);
 });
-test('studio hero does not leak into artist portfolio routes', () => {
-  for (const file of ['src/app/[locale]/artists/[slug]/portfolio/page.tsx', 'src/app/[locale]/artists/[slug]/portfolio/[workSlug]/page.tsx']) {
-    assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /PortfolioHero|PortfolioIntro/);
-  }
-});
+

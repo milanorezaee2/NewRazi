@@ -196,5 +196,61 @@ export function validateSiteContentRelations(site: SiteContent): ContentRelation
 
   references("hero.featuredPatternIds", site.hero?.featuredPatternIds, "patterns", patterns);
 
+  /* Scheduled publishing: `publishAt` must be a real ISO date, or absent. */
+  const publishAt = (path: string, id: string, value: unknown) => {
+    if (value === undefined || value === null || value === "") return;
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}/.test(value) || Number.isNaN(Date.parse(value))) {
+      issues.push({ path: `${path}.publishAt`, id, relation: "ISO date publishAt" });
+    }
+  };
+  (Array.isArray(site.portfolios) ? site.portfolios : []).forEach((portfolio, index) => {
+    publishAt(`portfolios[${index}]`, portfolio.id, portfolio.publishAt);
+  });
+  (Array.isArray(site.education) ? site.education : []).forEach((item, index) => {
+    publishAt(`education[${index}]`, item.id, item.publishAt);
+  });
+
+  /* Page manager: every slide needs a real, same-origin image path. */
+  const rawPages = site.pages as
+    | { portfolio?: { hero?: { slides?: unknown[] } }; academy?: { hero?: { slides?: unknown[] } } }
+    | undefined;
+  (["portfolio", "academy"] as const).forEach((pageKey) => {
+    const slides = rawPages?.[pageKey]?.hero?.slides;
+    if (!Array.isArray(slides)) return;
+    const seenSlideIds = new Set<string>();
+    slides.forEach((raw, index) => {
+      const slide = (raw && typeof raw === "object" ? raw : {}) as { id?: unknown; src?: unknown };
+      const path = `pages.${pageKey}.hero.slides[${index}]`;
+      const id = typeof slide.id === "string" ? slide.id.trim() : "";
+      if (!id || seenSlideIds.has(id)) {
+        issues.push({ path: `${path}.id`, id, relation: "unique hero slide id" });
+      } else {
+        seenSlideIds.add(id);
+      }
+      const src = typeof slide.src === "string" ? slide.src.trim() : "";
+      const safe = src.startsWith("/") && !src.startsWith("//") && !src.includes("..");
+      if (!safe) {
+        issues.push({ path: `${path}.src`, id, relation: "same-origin image path" });
+      }
+    });
+  });
+
+  /* Testimonials: unique ids and a real course reference when one is given. */
+  const slugs = new Set((Array.isArray(site.education) ? site.education : [])
+    .map((item) => item.slug)
+    .filter((slug): slug is string => typeof slug === "string" && slug.length > 0));
+  const testimonialIds = new Set<string>();
+  (Array.isArray(site.testimonials) ? site.testimonials : []).forEach((testimonial, index) => {
+    const id = typeof testimonial?.id === "string" ? testimonial.id.trim() : "";
+    if (!id || testimonialIds.has(id)) {
+      issues.push({ path: `testimonials[${index}].id`, id, relation: "unique testimonial id" });
+    } else {
+      testimonialIds.add(id);
+    }
+    if (testimonial?.educationSlug) {
+      reference(`testimonials[${index}].educationSlug`, testimonial.educationSlug, "education.slug", slugs);
+    }
+  });
+
   return issues;
 }

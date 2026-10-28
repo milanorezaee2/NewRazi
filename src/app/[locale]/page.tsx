@@ -1,123 +1,14 @@
-import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio";
-import { siteStatistics } from "@/lib/data/statistics";
-import { publicEducationItems } from "@/lib/academy/publication";
-import type { Metadata } from "next";
-import { Hero } from "@/components/home/Hero";
-import {
-  ArtistsSection,
-  B2BCustomSection,
-  BestSellersSection,
-  CategoriesSection,
-  DiscoverySection,
-  EducationSection,
-  ExclusiveSection,
-  NewsletterSection,
-  NewArrivalsSection,
-  PatternRail,
-  PortfoliosSection,
-  SpacesSection,
-  StoriesSection,
-  StylesSection,
-} from "@/components/home/sections";
-import { artistStats, enrichEducation, enrichPattern, enrichPortfolio, enrichProduct, getSite } from "@/lib/data/queries";
-import { dictionaries } from "@/lib/i18n/dictionary";
+import { redirect } from "next/navigation";
 import type { Locale } from "@/lib/i18n/types";
-import { Fragment } from "react";
-import { getEditableRouteMetadata } from "@/lib/site-seo";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+/**
+ * The portfolio is the front door of the two-page site: visitors meet the work
+ * first and continue to the academy. The locale root therefore forwards to the
+ * portfolio.
+ */
+export default async function LocaleIndexPage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
-  return getEditableRouteMetadata("/", locale, dictionaries[locale].brand, dictionaries[locale].tagline);
-}
-
-export default async function HomePage({ params }: { params: Promise<{ locale: Locale }> }) {
-  const { locale } = await params;
-  const site = await getSite();
-  const d = dictionaries[locale];
-  const stats = siteStatistics(site);
-
-  const sections = site.homeSections.filter((s) => s.enabled).sort((a, b) => a.order - b.order);
-
-  const patterns = site.patterns.map((p) => enrichPattern(site, p));
-  const products = site.products.slice().sort((a, b) => a.order - b.order).map((p) => enrichProduct(site, p));
-  const portfolios = site.portfolios.filter(p => isStudioPortfolio(p) && isPublishedPortfolio(p)).map((p) => enrichPortfolio(site, p));
-  const education = publicEducationItems(site.education).map((e) => enrichEducation(site, e));
-  const artists = site.artists
-    .filter((a) => a.featured)
-    .map((a) => {
-      const s = artistStats(site, a.id);
-      return { ...a, featuredPattern: s.patterns[0] ?? null, portfolioPreview: s.portfolios.map((p) => p.cover), counts: { patterns: s.patterns.length, projects: s.portfolios.length } };
-    });
-  const heroPatterns = site.hero.featuredPatternIds.map((id) => site.patterns.find((p) => p.id === id)).filter(Boolean) as typeof site.patterns;
-  const styleCounts = Object.fromEntries(site.categories.map((c) => [c.id, site.patterns.filter((p) => p.categoryId === c.id).length]));
-  const featuredCats = site.categories.filter((c) => c.featured).sort((a, b) => a.order - b.order);
-
-  const renderSection = (key: string) => {
-    const section = renderFlowSection(key);
-    if (!section || key === "discovery") return section;
-    return (
-      <div key={key} data-home-section={key} className="home-flow__item">
-        {section}
-      </div>
-    );
-  };
-  const renderFlowSection = (key: string) => {
-    switch (key) {
-      case "hero":
-        return <Hero hero={site.hero} patterns={heroPatterns} stats={stats} />;
-      case "discovery":
-        return (
-          <>
-            <div data-home-section="discovery" className="home-flow__item">
-              <DiscoverySection patterns={patterns.filter((p) => p.featured)} categories={featuredCats} />
-            </div>
-            {featuredCats.length > 0 && (
-              <div data-home-section="categories" className="home-flow__item">
-                <CategoriesSection categories={featuredCats} />
-              </div>
-            )}
-          </>
-        );
-      case "trending":
-        return <PatternRail id="trending" eyebrow={d.common.trending} title={d.home.trendingTitle} description={d.home.trendingDesc} patterns={patterns.filter((p) => p.trending)} hrefPath="/patterns?sort=trending" tone="secondary" />;
-      case "bestSellers":
-        return <BestSellersSection patterns={patterns.filter((p) => p.bestSeller)} products={products.filter((p) => p.bestSeller)} />;
-      case "newPatterns":
-        return <NewArrivalsSection patterns={patterns.filter((p) => p.isNew)} products={products.filter((p) => p.isNew)} />;
-      case "artists":
-        return <ArtistsSection artists={artists} />;
-      case "portfolios":
-        return <PortfoliosSection items={portfolios.filter((p) => p.featured)} eyebrow={d.nav.portfolio} title={d.home.portfolioTitle} description={d.home.portfolioDesc} hrefPath="/portfolio" />;
-      case "styles":
-        return <StylesSection categories={featuredCats} counts={styleCounts} />;
-      case "spaces":
-        return <SpacesSection spaces={site.spaces.slice().sort((a, b) => a.order - b.order)} />;
-      case "exclusive":
-        return <ExclusiveSection products={products.filter((p) => !p.artistId && p.featured)} heroImage={site.portfolios[0]?.cover ?? site.hero.image} />;
-      case "projects":
-        return <PortfoliosSection items={portfolios.filter((p) => p.isProject)} eyebrow={d.nav.projects} title={d.home.projectsTitle} description={d.home.projectsDesc} hrefPath="/projects" />;
-      case "education":
-        return <EducationSection items={[...education.filter((e) => e.featured), ...education.filter((e) => !e.featured && e.popular)]} />;
-      case "b2b":
-        return <B2BCustomSection image1={site.portfolios[0]?.cover ?? site.hero.image} image2={site.portfolios[3]?.cover ?? site.hero.image} showB2B showCustom={false} />;
-      case "custom":
-        return <B2BCustomSection image1={site.portfolios[0]?.cover ?? site.hero.image} image2={site.portfolios[3]?.cover ?? site.hero.image} showB2B={false} showCustom />;
-      case "stories":
-        return <StoriesSection stories={site.stories} artists={site.artists} />;
-      case "newsletter":
-        return <NewsletterSection />;
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="home-flow">
-      {sections.map((section) => (
-        <Fragment key={section.key}>{renderSection(section.key)}</Fragment>
-      ))}
-    </div>
-  );
+  redirect(`/${locale}/portfolio`);
 }

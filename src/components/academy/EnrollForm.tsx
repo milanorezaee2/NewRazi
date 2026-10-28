@@ -44,6 +44,15 @@ export function EnrollForm({
   const isEvent = item.type === "workshop" || item.type === "webinar";
   const isPaid = Boolean(item.price && (item.price.fa > 0 || item.price.en > 0));
 
+  /**
+   * Entry-point attribution: `/academy?from=portfolio` and friends. Read at
+   * submit time so it also survives client-side navigation.
+   */
+  function attributionSource(): string {
+    if (typeof window === "undefined") return "direct";
+    return new URLSearchParams(window.location.search).get("from")?.trim().toLowerCase() || "direct";
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setSending(true);
@@ -52,7 +61,12 @@ export function EnrollForm({
       const res = await fetch("/api/academy/enroll", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ slug: item.slug, name: name.trim(), email: email.trim().toLowerCase() }),
+        body: JSON.stringify({
+          slug: item.slug,
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          source: attributionSource(),
+        }),
       });
       const data = (await res.json()) as { ok: boolean; enrollment?: EnrollResult; error?: string };
       if (!res.ok || !data.ok || !data.enrollment) {

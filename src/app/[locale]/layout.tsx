@@ -5,18 +5,12 @@ import { AppProviders } from "@/components/providers/AppProviders";
 import { Fragment } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { LiveChatWidget } from "@/components/layout/LiveChatWidget";
-import { CartDrawer } from "@/components/layout/CartDrawer";
-import { SearchPalette } from "@/components/layout/SearchPalette";
 import { LocaleChrome } from "@/components/layout/LocaleChrome";
-import { AnnouncementBarServer } from "@/components/layout/AnnouncementBarServer";
-import { getNavData } from "@/lib/data/nav";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import { getCspNonce } from "@/lib/security/nonce";
 import { PublicPwaRegister } from "@/components/pwa/PublicPwaRegister";
 import { PublicPwaInstallPrompt } from "@/components/pwa/PublicPwaInstallPrompt";
-import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 
 export const dynamic = "force-dynamic";
 
@@ -67,7 +61,6 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const nonce = await getCspNonce();
   if (!LOCALES.includes(raw as Locale)) notFound();
   const locale = raw as Locale;
-  const nav = await getNavData();
 
   return (
     <>
@@ -89,18 +82,13 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           before={
             <Fragment key="before">
               <a key="skip-link" href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[100] focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-background">Skip to content</a>
-              <AnnouncementBarServer key="announcement" locale={locale} />
-              <Header key="header" nav={nav} />
-              <CartDrawer key="cart-drawer" />
-              <SearchPalette key="search-palette" />
+              <Header key="header" />
             </Fragment>
           }
           after={<Footer key="footer" />}
         >
           {children}
         </LocaleChrome>
-        <MobileBottomNav />
-        <LiveChatWidget />
         <PublicPwaInstallPrompt locale={locale} />
       </AppProviders>
     </>

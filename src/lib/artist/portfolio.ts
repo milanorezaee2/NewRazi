@@ -8,8 +8,19 @@ export function isStudioPortfolio(work: Portfolio): boolean {
   );
 }
 
+/**
+ * Scheduled release: a work with a future `publishAt` stays private until then.
+ * Malformed dates are ignored rather than silently hiding published work.
+ */
+function isReleased(publishAt?: string, now: number = Date.now()): boolean {
+  if (!publishAt) return true;
+  const timestamp = Date.parse(publishAt);
+  return Number.isNaN(timestamp) || timestamp <= now;
+}
+
 export function isPublishedPortfolio(work: Portfolio): boolean {
-  return work.draftStatus === undefined || work.draftStatus === "published";
+  const statusOk = work.draftStatus === undefined || work.draftStatus === "published";
+  return statusOk && isReleased(work.publishAt);
 }
 
 export function artistPortfolioWorks(

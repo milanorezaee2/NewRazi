@@ -4,15 +4,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, Layers, Signal, Users } from "lucide-react";
 import { EducationCard } from "@/components/cards/EducationCard";
-import { PatternCard } from "@/components/cards/PatternCard";
-import { ProductCard } from "@/components/cards/ProductCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Reveal } from "@/components/ui/Reveal";
 import { CourseProgressSidebar } from "@/components/academy/CourseProgressSidebar";
+import { Testimonials } from "@/components/academy/Testimonials";
+import { StickyCta } from "@/components/ui/StickyCta";
 import { EnrollForm } from "@/components/academy/EnrollForm";
-import { StickyBuyBar } from "@/components/product/StickyBuyBar";
+import { PortfolioCard } from "@/components/cards/PortfolioCard";
+import { isPublishedPortfolio } from "@/lib/artist/portfolio";
+import { enrichPortfolio } from "@/lib/data/enrich";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { academyOverview } from "@/lib/data/academy";
 import { isPublishedEducation, publicEducationItems } from "@/lib/academy/publication";
@@ -20,12 +22,13 @@ import { priceLabel } from "@/lib/utils";
 import { getAllReservations } from "@/lib/data/reservations";
 import { getSession } from "@/lib/auth";
 import { hasGrantedReservation, isFreePrice } from "@/lib/academy-live";
-import { enrichEducation, enrichPattern, enrichProduct, getSite } from "@/lib/data/queries";
+import { enrichEducation, getSite } from "@/lib/data/queries";
 import type { EnrichedEducation } from "@/lib/data/enrich";
 import { dictionaries } from "@/lib/i18n/dictionary";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
 import { faNum, formatDuration, formatPrice, href, t } from "@/lib/utils";
 import { getCspNonce } from "@/lib/security/nonce";
+import { ogImageUrl } from "@/lib/seo/og-url";
 
 type Props = { params: Promise<{ locale: Locale; slug: string }> };
 
@@ -44,22 +47,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = t(e.title, locale);
   const description = t(e.excerpt, locale);
   const url = `https://rosieatelier.com/${locale}/academy/${slug}`;
+  const card = ogImageUrl({ src: e.image, title: t(e.title, "en") || e.slug, eyebrow: "Academy" });
   return {
     title,
     description,
-    alternates: { canonical: `/${locale}/academy/${slug}` },
+    alternates: {
+      canonical: `/${locale}/academy/${slug}`,
+      languages: { fa: `/fa/academy/${slug}`, en: `/en/academy/${slug}`, "x-default": `/fa/academy/${slug}` },
+    },
     openGraph: {
       title,
       description,
       url,
       type: "article",
-      images: [{ url: e.image, width: 1200, height: 800, alt: title }],
+      images: [{ url: card, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [e.image],
+      images: [card],
     },
   };
 }
@@ -137,7 +144,7 @@ export default async function EducationDetail({ params }: Props) {
           instructor: {
             "@type": "Person",
             name: t(e.author.name, locale),
-            url: `https://rosieatelier.com/${locale}/artists/${e.author.slug}`,
+            url: `https://rosieatelier.com/${locale}/portfolio`,
           },
         } : {}),
         ...(e.price ? {
@@ -165,6 +172,50 @@ export default async function EducationDetail({ params }: Props) {
         } : {}),
       };
 
+  /* Live events get Event markup rather than Article — schedule, seats and host. */
+  const eventLd = e.liveEvent
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Event",
+        name: t(e.title, locale),
+        description: t(e.excerpt, locale),
+        image: e.image,
+        url: `https://rosieatelier.com/${locale}/academy/${slug}`,
+        startDate: e.liveEvent.startsAt,
+        eventStatus: "https://schema.org/EventScheduled",
+        eventAttendanceMode:
+          e.type === "webinar" || e.liveEvent.isOnline
+            ? "https://schema.org/OnlineEventAttendanceMode"
+            : "https://schema.org/OfflineEventAttendanceMode",
+        ...(e.liveEvent.capacity
+          ? {
+              maximumAttendeeCapacity: e.liveEvent.capacity,
+              offers: {
+                "@type": "Offer",
+                price: e.price ? (locale === "fa" ? e.price.fa : e.price.en) : 0,
+                priceCurrency: locale === "fa" ? "IRR" : "USD",
+                availability: "https://schema.org/InStock",
+                url: `https://rosieatelier.com/${locale}/academy/${slug}`,
+              },
+            }
+          : {}),
+        ...(eventHost || e.author
+          ? { performer: { "@type": "Person", name: eventHost ?? t(e.author!.name, locale) } }
+          : {}),
+        organizer: { "@type": "Organization", name: "Rosie Atelier", url: "https://rosieatelier.com" },
+      }
+    : null;
+
+  /**
+   * Works from the studio in the same discipline — the honest proof that the
+   * technique taught here is actually applied in real projects.
+   */
+  const disciplineWorks = site.portfolios
+    .filter(isPublishedPortfolio)
+    .filter((work) => work.categoryId === e.categoryId || work.patternIds.some((id) => e.patternIds.includes(id)))
+    .slice(0, 3)
+    .map((work) => enrichPortfolio(site, work));
+
   const breadcrumb = [
     { label: d.nav.home, href: href(locale, "/") },
     { label: d.nav.education, href: href(locale, "/academy") },
@@ -181,6 +232,13 @@ export default async function EducationDetail({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {eventLd && (
+        <script
+          nonce={nonce}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(eventLd) }}
+        />
+      )}
 
       {/* Hero */}
       <section className="relative isolate h-[58svh] min-h-[400px] overflow-hidden bg-[#0d1117] text-white md:h-[70svh] md:min-h-[480px]">
@@ -204,7 +262,8 @@ export default async function EducationDetail({ params }: Props) {
                     name={instructorName}
                     photo={instructorPhoto}
                     label="مدرس"
-                    href={e.author && !enriched.instructor?.artist ? href(locale, `/artists/${e.author.slug}`) : undefined}
+                    /* The instructor is the studio's designer — link to the work itself. */
+                    href={`${href(locale, "/portfolio")}?from=academy`}
                   />
                 ) : null}
                 {hostName ? (
@@ -220,12 +279,12 @@ export default async function EducationDetail({ params }: Props) {
                 {d.common.author}: {eventHost}
               </span>
             ) : e.author && (
-              <Link href={href(locale, `/artists/${e.author.slug}`)} className="inline-flex items-center gap-2 hover:text-white">
+              <span className="inline-flex items-center gap-2">
                 <span className="relative h-8 w-8 overflow-hidden rounded-full">
                   <Image src={e.author.avatar} alt="" fill sizes="32px" className="object-cover" />
                 </span>
                 {d.common.author}: {t(e.author.name, locale)}
-              </Link>
+              </span>
             )}
             <span className="inline-flex items-center gap-1"><Signal className="h-3.5 w-3.5" />{d.common[e.difficulty]}</span>
             <span className="inline-flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{formatDuration(e.durationMin, locale, d.common)}</span>
@@ -294,25 +353,6 @@ export default async function EducationDetail({ params }: Props) {
                 />
               </div>
 
-              {/* Mobile sticky enroll bar (jumps to the form above) */}
-              <StickyBuyBar
-                watchId="enroll"
-                revealAfter={480}
-                caption={t(e.title, locale)}
-                price={isFreePrice(e.price) ? (locale === "fa" ? "رایگان" : "Free") : formatPrice(e.price!, locale)}
-              >
-                <a
-                  href="#enroll"
-                  className="inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition-transform duration-200 active:scale-[0.98]"
-                >
-                  {e.type === "course"
-                    ? isFreePrice(e.price)
-                      ? locale === "fa" ? "شروع رایگان دوره" : "Start free"
-                      : locale === "fa" ? "ثبت‌نام در دوره" : "Enroll in course"
-                    : locale === "fa" ? "رزرو صندلی" : "Reserve a seat"}
-                </a>
-              </StickyBuyBar>
-
               {stats?.capacity ? (
                 <p className="text-caption text-foreground-secondary tabular">
                   {locale === "fa"
@@ -320,6 +360,22 @@ export default async function EducationDetail({ params }: Props) {
                     : `${stats.enrollments} of ${stats.capacity} seats taken`}
                 </p>
               ) : null}
+
+              {/* Curriculum summary — lessons, total time, free previews */}
+              {hasLessonList && (
+                <dl className="grid grid-cols-3 divide-x divide-border rounded-lg border border-border bg-background-secondary text-center rtl:divide-x-reverse">
+                  {[
+                    [locale === "fa" ? faNum(e.lessonList!.length) : e.lessonList!.length, locale === "fa" ? "درس" : "Lessons"],
+                    [formatDuration(e.lessonList!.reduce((sum, lesson) => sum + (lesson.durationMin || 0), 0) || e.durationMin, locale, d.common), locale === "fa" ? "زمان کل" : "Total time"],
+                    [locale === "fa" ? faNum(e.lessonList!.filter((lesson) => lesson.free).length) : e.lessonList!.filter((lesson) => lesson.free).length, locale === "fa" ? "پیش‌نمایش رایگان" : "Free previews"],
+                  ].map(([value, title]) => (
+                    <div key={String(title)} className="px-2 py-3">
+                      <dt className="text-caption text-muted">{title}</dt>
+                      <dd className="mt-0.5 text-sm font-semibold tabular text-foreground">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
 
               {/* Progress + lesson list (if lessonList present, full detail; else simple bar) */}
               {hasLessonList ? (
@@ -362,18 +418,15 @@ export default async function EducationDetail({ params }: Props) {
 
               {/* Author */}
               {e.author && (
-                <Link
-                  href={href(locale, `/artists/${e.author.slug}`)}
-                  className="flex items-center gap-3 border-t border-border pt-4 group"
-                >
+                <div className="flex items-center gap-3 border-t border-border pt-4 group">
                   <span className="relative h-12 w-12 overflow-hidden rounded-full">
                     <Image src={e.author.avatar} alt="" fill sizes="48px" className="object-cover" />
                   </span>
                   <span>
-                    <span className="block font-medium group-hover:text-accent">{t(e.author.name, locale)}</span>
+                    <span className="block font-medium">{t(e.author.name, locale)}</span>
                     <span className="block text-caption text-foreground-secondary">{t(e.author.profession, locale)}</span>
                   </span>
-                </Link>
+                </div>
               )}
             </div>
           </aside>
@@ -403,32 +456,56 @@ export default async function EducationDetail({ params }: Props) {
         </section>
       )}
 
-      {e.patterns.length > 0 && (
+      {disciplineWorks.length > 0 && (
         <section className="bg-background-secondary">
           <div className="container-x section-y">
-            <SectionHeader eyebrow={d.nav.patterns} title={d.common.relatedPatterns} href={href(locale, "/patterns")} hrefLabel={d.nav.viewAll} />
-            <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-4">
-              {e.patterns.map((p) => <PatternCard key={p.id} pattern={enrichPattern(site, p)} />)}
+            <SectionHeader
+              eyebrow={locale === "fa" ? "اثبات کاربرد" : "Applied proof"}
+              title={locale === "fa" ? "همین تکنیک، در پروژه‌های واقعی" : "The same technique, in real projects"}
+              href={`${href(locale, "/portfolio")}?from=academy`}
+              hrefLabel={d.nav.viewAll}
+            />
+            <div className="grid gap-6 md:grid-cols-3">
+              {disciplineWorks.map((work, i) => (
+                <Reveal key={work.id} delay={i * 70}>
+                  <PortfolioCard item={work} />
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
       )}
-      {e.products.length > 0 && (
-        <section className="container-x section-y">
-          <SectionHeader eyebrow={d.nav.products} title={d.common.relatedProducts} href={href(locale, "/shop")} hrefLabel={d.nav.viewAll} />
-          <div className="mt-8 grid gap-5 xs:grid-cols-2 md:grid-cols-4">
-            {e.products.map((p) => <ProductCard key={p.id} product={enrichProduct(site, p)} />)}
-          </div>
-        </section>
-      )}
+
+      <Testimonials
+        testimonials={site.testimonials}
+        locale={locale}
+        slug={e.slug}
+        className="container-x section-y"
+      />
+
       {related.length > 0 && (
-        <section className="container-x section-y">
+        /* Stays on the plain page surface: the proof band above may be hidden
+           when no related work exists, and two adjacent dark bands read as one. */
+        <section className="container-x section-y border-t border-border">
           <SectionHeader eyebrow={d.nav.education} title={d.common.relatedTutorials} href={href(locale, "/academy")} hrefLabel={d.nav.viewAll} />
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((x, i) => <Reveal key={x.id} delay={i * 70}><EducationCard item={x} /></Reveal>)}
           </div>
         </section>
       )}
+
+      <StickyCta
+        label={t(e.title, locale)}
+        primary={{
+          label: locale === "fa" ? "دیدن آثار آتلیه" : "See the studio's work",
+          href: `${href(locale, "/portfolio")}?from=academy`,
+        }}
+        secondary={{
+          label: locale === "fa" ? "سؤالی دارید؟" : "Ask a question",
+          href: "mailto:hello@rosieatelier.com",
+          external: true,
+        }}
+      />
     </article>
   );
 }
