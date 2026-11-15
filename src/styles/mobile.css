@@ -71,7 +71,7 @@
 
   /* Portfolio: editorial hero, video, filters, and gallery all stay in the viewport width. */
   [data-portfolio-hero] > .container-x { padding-top: calc(var(--announce-h, 0px) + var(--header-h-mobile) + 1rem); }
-  [data-portfolio-hero] .container-x > .grid { grid-template-columns: minmax(0, 1fr); gap: 0.85rem; padding-block: 0.8rem 0.95rem; }
+  [data-portfolio-hero] .container-x > .grid { grid-template-columns: minmax(0, 1fr); gap: 1rem; padding-block: 1rem 1.2rem; }
   [data-portfolio-hero] h1 { max-width: 18ch; font-size: clamp(1.9rem, 8.5vw, 2.8rem); line-height: 1.23; }
   [data-portfolio-hero] .container-x > .grid > div:first-child > p { margin-top: 0.8rem; font-size: 0.92rem; line-height: 1.85; }
   [data-portfolio-hero] .container-x > .grid > div:first-child > div:has(> a) { gap: 0.6rem; margin-top: 1.15rem; }
@@ -90,10 +90,10 @@
   .portfolio-work-grid h3 { font-size: clamp(0.78rem, 3.7vw, 0.98rem); line-height: 1.42; }
 
   /* Academy hero and catalogue: stacked media, readable cards, and sticky filters below the header. */
-  body:has(#courses) #main .anim-page > section:first-of-type > .container-x { padding-top: calc(var(--announce-h, 0px) + var(--header-h-mobile) + 0.65rem); padding-bottom: 1.2rem; }
-  body:has(#courses) #main .anim-page > section:first-of-type > .container-x > .grid { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; padding-block: 0.75rem 0.85rem; }
+  body:has(#courses) #main .anim-page > section:first-of-type > .container-x { padding-top: calc(var(--announce-h, 0px) + var(--header-h-mobile) + 0.75rem); padding-bottom: 1.6rem; }
+  body:has(#courses) #main .anim-page > section:first-of-type > .container-x > .grid { grid-template-columns: minmax(0, 1fr); gap: 0.9rem; padding-block: 0.9rem 1.1rem; }
   body:has(#courses) #main .anim-page > section:first-of-type h1 { max-width: 17ch; font-size: clamp(1.85rem, 8vw, 2.7rem); line-height: 1.25; }
-  body:has(#courses) #main .anim-page > section:first-of-type .group\/preview { min-height: 12.6rem; aspect-ratio: auto; }
+  body:has(#courses) #main .anim-page > section:first-of-type .group\/preview { min-height: 16.8rem; aspect-ratio: auto; }
   body:has(#courses) #main .anim-page > section:first-of-type > .container-x > ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
   body:has(#courses) #main .sticky.top-\[var\(--header-h-compact\)\] { top: calc(var(--header-h-mobile) - 0.25rem); }
   body:has(#courses) #main .sticky.top-\[var\(--header-h-compact\)\] button,

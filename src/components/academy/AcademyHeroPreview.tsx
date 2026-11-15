@@ -66,7 +66,7 @@ export function AcademyHeroPreview({
   }, []);
 
   return (
-    <div className={cn("group/preview relative flex min-h-[204px] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-elevated sm:min-h-[252px]", className)}>
+    <div className={cn("group/preview relative flex min-h-[272px] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-elevated sm:min-h-[336px]", className)}>
       {failed && poster ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover brightness-75" />
@@ -118,7 +118,7 @@ export function AcademyHeroPreview({
         </button>
       )}
 
-      <div className="relative z-20 mt-auto p-4 sm:p-5">{children}</div>
+      <div className="relative z-20 mt-auto p-5 sm:p-6">{children}</div>
     </div>
   );
 }

@@ -279,16 +279,16 @@ export default async function AcademyPage({
         />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(75%_55%_at_80%_0%,rgba(201,162,39,0.16)_0%,rgba(12,16,24,0)_60%)]" />
 
-        <div className="container-x relative z-10 pb-9 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1rem)] md:pb-12 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+1.5rem)]">
+        <div className="container-x relative z-10 pb-13 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.2rem)] md:pb-16 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+1.8rem)]">
           {/* Rail */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/12 pb-4 text-[10px] tracking-[0.26em] text-white/40" dir="ltr">
             <span>ROSIE ATELIER — ACADEMY</span>
             <span className="text-[#d6bc8e]/90">01 / SCHOOL</span>
           </div>
 
-          <div className="grid gap-7 py-6 md:py-7 lg:grid-cols-[repeat(20,minmax(0,1fr))] lg:items-center lg:gap-10">
+          <div className="grid gap-8 py-7 md:py-10 lg:grid-cols-[repeat(15,minmax(0,1fr))] lg:items-center lg:gap-11">
             {/* Copy */}
-            <div className="min-w-0 lg:col-span-13">
+            <div className="min-w-0 lg:col-span-8">
               <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-[#d6bc8e]">
                 <GraduationCap className="h-3.5 w-3.5" />
                 {heroEyebrowOverride || d.nav.education}
