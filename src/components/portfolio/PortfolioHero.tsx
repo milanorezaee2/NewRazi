@@ -80,7 +80,7 @@ export function PortfolioHero({ locale, background, slides, intervalMs, scrim, c
         className="pointer-events-none absolute inset-y-6 end-[7%] hidden w-px bg-gradient-to-b from-transparent via-white/20 to-transparent lg:block"
       />
 
-      <div className="container-x relative pb-14 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-16 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
+      <div className="container-x relative pb-8 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1rem)] md:pb-10 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+1.5rem)]">
         {/* ── Top rail ── */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/12 pb-4">
           <Breadcrumb
@@ -96,7 +96,7 @@ export function PortfolioHero({ locale, background, slides, intervalMs, scrim, c
           </span>
         </div>
 
-        <div className="grid gap-10 py-9 md:py-14 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-center lg:gap-14">
+        <div className="grid gap-7 py-6 md:py-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.6fr)] lg:items-center lg:gap-10">
           {/* ── Editorial column ── */}
           <div className="min-w-0">
             <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ export function PortfolioHero({ locale, background, slides, intervalMs, scrim, c
 
           {/* ── Framed video plate ── */}
           <div className="relative min-w-0">
-            <div className="relative rounded-[26px] border border-white/12 bg-white/[0.04] p-2.5 shadow-[0_40px_90px_-50px_rgba(0,0,0,0.95)] backdrop-blur-[2px]">
+            <div className="relative rounded-[22px] border border-white/12 bg-white/[0.04] p-1.5 shadow-[0_30px_70px_-40px_rgba(0,0,0,0.9)] backdrop-blur-[2px]">
               <PortfolioHeroVideo
                 src={video.src}
                 poster={video.poster}

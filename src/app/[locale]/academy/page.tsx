@@ -279,16 +279,16 @@ export default async function AcademyPage({
         />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(75%_55%_at_80%_0%,rgba(201,162,39,0.16)_0%,rgba(12,16,24,0)_60%)]" />
 
-        <div className="container-x relative z-10 pb-16 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1.5rem)] md:pb-20 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+2.25rem)]">
+        <div className="container-x relative z-10 pb-9 pt-[calc(var(--announce-h,0px)+var(--header-h-mobile)+1rem)] md:pb-12 md:pt-[calc(var(--announce-h,0px)+var(--header-h)+1.5rem)]">
           {/* Rail */}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/12 pb-4 text-[10px] tracking-[0.26em] text-white/40" dir="ltr">
             <span>ROSIE ATELIER — ACADEMY</span>
             <span className="text-[#d6bc8e]/90">01 / SCHOOL</span>
           </div>
 
-          <div className="grid gap-10 py-9 md:py-12 lg:grid-cols-12 lg:items-center lg:gap-14">
+          <div className="grid gap-7 py-6 md:py-7 lg:grid-cols-[repeat(20,minmax(0,1fr))] lg:items-center lg:gap-10">
             {/* Copy */}
-            <div className="min-w-0 lg:col-span-5">
+            <div className="min-w-0 lg:col-span-13">
               <span className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-[#d6bc8e]">
                 <GraduationCap className="h-3.5 w-3.5" />
                 {heroEyebrowOverride || d.nav.education}
@@ -352,7 +352,7 @@ export default async function AcademyPage({
             {/* Featured preview plate */}
             {featured && (
               <div className="min-w-0 lg:col-span-7">
-                <div className="relative rounded-[26px] border border-white/12 bg-white/[0.04] p-2.5 shadow-[0_40px_90px_-50px_rgba(0,0,0,0.95)] backdrop-blur-[2px]">
+                <div className="relative rounded-[26px] border border-white/12 bg-white/[0.04] p-2 shadow-[0_40px_90px_-50px_rgba(0,0,0,0.95)] backdrop-blur-[2px]">
                   <AcademyHeroPreview src={heroVideo} poster={featured.image}>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e4cba4] px-3 py-1 text-[11px] font-semibold text-[#17201b]">
