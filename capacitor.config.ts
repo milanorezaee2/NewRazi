@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
-// The admin console uses authenticated server routes and APIs, so the Android
-// app opens the deployed HTTPS admin login instead of bundling a static export.
-// Override this with CAPACITOR_SERVER_URL when building for another domain.
+// The public Android app is a secure web wrapper for the live, server-rendered site.
+// It does not bundle or duplicate site content; account and commerce features remain online.
+// Override the origin with CAPACITOR_SERVER_URL when building for another deployment.
 const siteUrl = (
   process.env.CAPACITOR_SERVER_URL
   ?? process.env.NEXT_PUBLIC_SITE_URL
@@ -23,13 +23,12 @@ if (parsedSiteUrl.protocol !== "https:" && !allowCleartext) {
 }
 
 const config: CapacitorConfig = {
-  appId: "com.rosieatelier.admin",
-  appName: "Rosie Atelier Admin",
+  appId: "com.rosieatelier.app",
+  appName: "آتلیه رزی",
   webDir: "capacitor-web",
   server: {
-    // Start directly at admin sign-in; an existing admin session lands in the console.
-    // Keep CAPACITOR_SERVER_URL pointed at the actual production deployment.
-    url: new URL("/admin/fa/login?source=android", parsedSiteUrl).toString(),
+    // Open the existing Persian-language public site without changing its routes or content.
+    url: new URL("/fa?source=android", parsedSiteUrl).toString(),
     cleartext: allowCleartext,
     allowNavigation: [siteHost, `*.${siteHost}`],
     errorPath: "offline.html",

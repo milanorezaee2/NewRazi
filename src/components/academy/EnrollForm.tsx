@@ -133,7 +133,7 @@ export function EnrollForm({
         <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
           {isEvent && item.type !== "course" && result.accessGranted && (
             <Link
-              href={href(locale, `/academy/${item.slug}/live`)}
+              href={href(locale, `/academy/${item.slug}/live?enter=1`)}
               onClick={onDone}
               className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent/90"
             >

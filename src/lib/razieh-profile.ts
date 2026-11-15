@@ -151,10 +151,10 @@ export const RAZIEH_PROFILE = {
   /** Where the introduction goes on to. */
   personalPortfolio: {
     label: L("پورتفولیوی شخصی", "Personal portfolio"),
-    href: "/portfolio",
+    href: "/portfolio/razieh-textile-and-vest-design",
     note: L(
-      "آثار، فلسفه‌ی طراحی و مسیر حرفه‌ای راضیه در همین صفحه‌ی پورتفولیو روایت شده است.",
-      "Razieh's works, design philosophy and professional path are told on this portfolio page.",
+      "نگاهی به پورتفولیوی شخصی راضیه و یکی از پروژه‌های طراحی پارچه و پوشاک او.",
+      "Explore Razieh's personal portfolio through a featured textile and wearable design project.",
     ),
   },
 } as const;

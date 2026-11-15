@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ArrowUpLeft,
+  ArrowUpRight,
   Bell,
+  BellRing,
   BookOpen,
   ChevronLeft,
   FileText,
+  Eye,
   Frame,
   GalleryHorizontalEnd,
   LayoutDashboard,
@@ -22,6 +25,7 @@ import {
   Settings2,
   Sparkles,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
 import { PortfoliosManager } from "@/components/admin/PortfoliosManager";
@@ -36,11 +40,13 @@ import { mergeSeoEntries, SEO_ROUTE_DEFAULTS } from "@/lib/seo-pages";
 import { ADMIN_LOGIN_DISABLED } from "@/lib/admin-access";
 import { withCsrf } from "@/lib/security/csrf-client";
 import { cn } from "@/lib/utils";
-import type { Banner, SeoMeta, SiteContent } from "@/lib/types";
+import type { Banner, EducationItem, SeoMeta, SiteContent } from "@/lib/types";
+import { UsersManager } from "@/components/admin/UsersManager";
 import { formatInvalidContentWriteMessage } from "@/lib/admin-content-issues";
 import type { ContentRelationIssueSummary } from "@/lib/admin-content-issues";
 import type { ProductFamilyReferenceCounts } from "@/lib/product-family-references";
 import { PagesManager } from "@/components/admin/PagesManager";
+import { AnnouncementManager } from "@/components/admin/AnnouncementManager";
 import { MobileAdminNav } from "@/components/admin/MobileAdminNav";
 import type { Localized } from "@/lib/i18n/types";
 
@@ -50,6 +56,8 @@ type Section =
   | "portfolios"
   | "education"
   | "banners"
+  | "announcements"
+  | "users"
   | "seo";
 
 const REDIRECT_GRACE_MS = 300;
@@ -149,6 +157,8 @@ const NAV_GROUPS: NavGroup[] = [
       { id: "portfolios", label: "پورتفولیو", icon: <GalleryHorizontalEnd className="h-4 w-4" /> },
       { id: "pages", label: "مدیریت صفحه‌ها", icon: <Monitor className="h-4 w-4" /> },
       { id: "banners", label: "بنرهای آکادمی", icon: <Sparkles className="h-4 w-4" /> },
+      { id: "announcements", label: "اعلان", icon: <BellRing className="h-4 w-4" /> },
+      { id: "users", label: "کاربران و حضور رویدادها", icon: <Users className="h-4 w-4" /> },
     ],
   },
   {
@@ -592,9 +602,19 @@ export function AdminApp() {
               {section === "banners" && (
                 <BannersEditor
                   banners={data.banners}
+                  education={data.education}
                   onChange={(banners) => update({ banners })}
                 />
               )}
+              {section === "announcements" && (
+                <AnnouncementManager
+                  announcements={data.announcementBars ?? []}
+                  education={data.education}
+                  locale={locale}
+                  onChange={(announcementBars) => update({ announcementBars })}
+                />
+              )}
+              {section === "users" && <UsersManager />}
               {section === "seo" && (
                 <SeoEditor seo={data.seo} onChange={(seo) => update({ seo })} />
               )}
@@ -627,21 +647,33 @@ export function AdminApp() {
    ============================================================ */
 function BannersEditor({
   banners,
+  education,
   onChange,
 }: {
   banners: Banner[];
+  education: EducationItem[];
   onChange: (b: Banner[]) => void;
 }) {
+  const events = education.filter((item) => (item.type === "workshop" || item.type === "webinar") && item.liveEvent?.isOnline);
   const set = (id: string, patch: Partial<Banner>) =>
     onChange(banners.map((b) => (b.id === id ? { ...b, ...patch } : b)));
+  const enabledCount = banners.filter((banner) => banner.enabled).length;
+  const academyCount = banners.filter((banner) => banner.placement === "academy").length;
+
   return (
-    <Card
-      title="بنرها"
-      desc="بنرهای تبلیغاتی که در صفحات مختلف سایت نمایش داده می‌شوند."
-      action={
+    <section className="academy-banners-admin space-y-5">
+      <header className="academy-banners-admin__header">
+        <div className="min-w-0">
+          <span className="academy-banners-admin__eyebrow">ACADEMY · PROMOTIONS</span>
+          <h2 className="mt-2 flex items-center gap-2 text-2xl font-semibold tracking-tight text-foreground">
+            <Sparkles className="h-5 w-5 text-[#b79a68]" />
+            بنرهای آکادمی
+          </h2>
+          <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted">
+            پیام‌های تبلیغاتی را مدیریت کنید؛ جایگاه، لینک و وضعیت نمایش هر بنر را جداگانه تنظیم کنید.
+          </p>
+        </div>
         <Button
-          size="sm"
-          variant="outline"
           onClick={() =>
             onChange([
               ...banners,
@@ -649,70 +681,140 @@ function BannersEditor({
                 id: `b-${Date.now().toString(36)}`,
                 title: { fa: "", en: "" },
                 text: { fa: "", en: "" },
-                href: "/shop",
+                href: "/academy",
                 enabled: true,
-                placement: "shop",
+                placement: "academy",
+                showJoinButton: false,
+                joinLabel: { fa: "ورود به اتاق پخش", en: "Join live room" },
               },
             ])
           }
+          className="academy-banners-admin__add"
         >
           <Plus className="h-4 w-4" />
           افزودن بنر
         </Button>
-      }
-    >
-      <ul className="space-y-4">
-        {banners.map((b) => (
-          <li key={b.id} className="rounded-lg border border-border bg-background p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span
-                className={cn(
-                  "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                  b.enabled
-                    ? "bg-success/10 text-success"
-                    : "bg-background-secondary text-muted",
-                )}
-              >
-                {b.enabled ? "فعال" : "غیرفعال"}
-              </span>
-              <IconBtn label="حذف" onClick={() => onChange(banners.filter((x) => x.id !== b.id))}>
-                <Trash2 className="h-3.5 w-3.5" />
-              </IconBtn>
-            </div>
-            <LocalizedField label="عنوان" value={b.title} onChange={(v) => set(b.id, { title: v })} />
-            <LocalizedField label="متن" value={b.text} onChange={(v) => set(b.id, { text: v })} />
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Field label="لینک">
-                <Input dir="ltr" value={b.href} onChange={(e) => set(b.id, { href: e.target.value })} />
-              </Field>
-              <Field label="محل نمایش">
-                <Select
-                  value={b.placement}
-                  onChange={(e) =>
-                    set(b.id, { placement: e.target.value as Banner["placement"] })
-                  }
-                >
-                  <option value="top">بالای سایت</option>
-                  <option value="shop">فروشگاه</option>
-                  <option value="academy">آکادمی</option>
-                </Select>
-              </Field>
-              <div className="flex items-end pb-1">
-                <label className="flex cursor-pointer items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={b.enabled}
-                    onChange={(e) => set(b.id, { enabled: e.target.checked })}
-                    className="accent-accent"
-                  />
-                  فعال
-                </label>
+      </header>
+
+      <div className="academy-banners-admin__summary" aria-label="خلاصه بنرها">
+        <div><span>همهٔ بنرها</span><strong>{banners.length.toLocaleString("fa-IR")}</strong></div>
+        <div><span>فعال</span><strong>{enabledCount.toLocaleString("fa-IR")}</strong></div>
+        <div><span>جایگاه آکادمی</span><strong>{academyCount.toLocaleString("fa-IR")}</strong></div>
+      </div>
+
+      {banners.length === 0 ? (
+        <div className="academy-banners-admin__empty">
+          <span className="academy-banners-admin__empty-icon"><Sparkles className="h-5 w-5" /></span>
+          <h3>هنوز بنری ثبت نشده است</h3>
+          <p>با افزودن بنر، پیام‌های مهم آکادمی را در جایگاه مناسب نمایش دهید.</p>
+          <Button
+            variant="outline"
+            onClick={() => onChange([{
+              id: `b-${Date.now().toString(36)}`,
+              title: { fa: "", en: "" },
+              text: { fa: "", en: "" },
+              href: "/academy",
+              enabled: true,
+              placement: "academy",
+              showJoinButton: false,
+              joinLabel: { fa: "ورود به اتاق پخش", en: "Join live room" },
+            }])}
+          >
+            <Plus className="h-4 w-4" /> افزودن اولین بنر
+          </Button>
+        </div>
+      ) : (
+        <ul className="academy-banners-admin__list">
+          {banners.map((banner, index) => (
+            <li key={banner.id} className="academy-banner-editor-card">
+              <div className="academy-banner-editor-card__top">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="academy-banner-editor-card__number">{String(index + 1).padStart(2, "0")}</span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-foreground">
+                      {banner.title.fa || banner.title.en || "بنر بدون عنوان"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      {banner.placement === "academy" ? "آکادمی" : banner.placement === "shop" ? "فروشگاه" : "بالای سایت"}
+                    </p>
+                  </div>
+                  <span className={cn("academy-banner-editor-card__status", banner.enabled ? "is-enabled" : "is-disabled")}>
+                    <span aria-hidden="true" />{banner.enabled ? "فعال" : "غیرفعال"}
+                  </span>
+                </div>
+                <IconBtn label="حذف بنر" onClick={() => onChange(banners.filter((item) => item.id !== banner.id))}>
+                  <Trash2 className="h-4 w-4" />
+                </IconBtn>
               </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </Card>
+
+              <div className="academy-banner-editor-card__body">
+                <div className="academy-banner-editor-card__fields">
+                  <LocalizedField label="عنوان" value={banner.title} onChange={(value) => set(banner.id, { title: value })} />
+                  <LocalizedField label="متن" value={banner.text} onChange={(value) => set(banner.id, { text: value })} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="لینک مقصد">
+                      <Input dir="ltr" value={banner.href} placeholder="/academy یا https://…" onChange={(event) => set(banner.id, { href: event.target.value })} />
+                    </Field>
+                    <Field label="محل نمایش">
+                      <Select value={banner.placement} onChange={(event) => set(banner.id, { placement: event.target.value as Banner["placement"] })}>
+                        <option value="top">بالای سایت</option>
+                        <option value="shop">فروشگاه</option>
+                        <option value="academy">آکادمی</option>
+                      </Select>
+                    </Field>
+                  </div>
+                  <Field label="اتصال بنر به ورکشاپ یا وبینار (اختیاری)">
+                    <Select value={banner.eventSlug ?? ""} onChange={(event) => {
+                      const eventSlug = event.target.value || undefined;
+                      const previousHref = banner.eventSlug ? `/academy/${banner.eventSlug}` : "";
+                      const followsEvent = !banner.href || banner.href === "/academy" || banner.href === previousHref;
+                      set(banner.id, {
+                        eventSlug,
+                        showJoinButton: Boolean(eventSlug),
+                        ...(eventSlug ? { joinLabel: banner.joinLabel ?? { fa: "ورود به اتاق پخش", en: "Join live room" } } : {}),
+                        ...(followsEvent ? { href: eventSlug ? `/academy/${eventSlug}` : "/academy" } : {}),
+                      });
+                    }}>
+                      <option value="">بدون اتصال به رویداد</option>
+                      {events.map((event) => <option key={event.id} value={event.slug}>{event.type === "webinar" ? "وبینار · " : "ورکشاپ · "}{event.title.fa || event.title.en}</option>)}
+                    </Select>
+                  </Field>
+                  {banner.eventSlug && (
+                    <div className="space-y-3 rounded-xl border border-[#e4e9e5] bg-[#f8faf8] p-3">
+                      <label className="academy-banner-editor-card__toggle">
+                        <input type="checkbox" checked={banner.showJoinButton ?? true} onChange={(event) => set(banner.id, { showJoinButton: event.target.checked })} />
+                        <span className="academy-banner-editor-card__switch" aria-hidden="true" />
+                        <span>نمایش دکمهٔ جداگانهٔ ورود به اتاق پخش</span>
+                      </label>
+                      {(banner.showJoinButton ?? true) && <LocalizedField label="متن دکمهٔ ورود" value={banner.joinLabel ?? { fa: "ورود به اتاق پخش", en: "Join live room" }} onChange={(joinLabel) => set(banner.id, { joinLabel })} />}
+                    </div>
+                  )}
+                  <label className="academy-banner-editor-card__toggle">
+                    <input type="checkbox" checked={banner.enabled} onChange={(event) => set(banner.id, { enabled: event.target.checked })} />
+                    <span className="academy-banner-editor-card__switch" aria-hidden="true" />
+                    <span>نمایش این بنر در سایت</span>
+                  </label>
+                </div>
+
+                <div className="academy-banner-preview">
+                  <div className="academy-banner-preview__label"><Eye className="h-3.5 w-3.5" /> پیش‌نمایش</div>
+                  <div className="academy-banner-preview__surface" dir="rtl">
+                    <span className="academy-banner-preview__sparkle"><Sparkles className="h-4 w-4" /></span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold">{banner.title.fa || "عنوان بنر"}</p>
+                      <p className="mt-1 line-clamp-2 text-xs leading-5">{banner.text.fa || "متن کوتاه بنر در این بخش نمایش داده می‌شود."}</p>
+                    </div>
+                    {banner.href && <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                    {banner.eventSlug && (banner.showJoinButton ?? true) && <span className="shrink-0 rounded-full bg-[#203a30] px-2 py-1 text-[10px] font-semibold text-white">{banner.joinLabel?.fa || "ورود به اتاق پخش"}</span>}
+                  </div>
+                  <p className="academy-banner-preview__note">نمایش در جایگاه {banner.placement === "academy" ? "آکادمی" : banner.placement === "shop" ? "فروشگاه" : "بالای سایت"}</p>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

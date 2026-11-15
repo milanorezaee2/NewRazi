@@ -26,6 +26,7 @@ import { AcademyHeroPreview } from "@/components/academy/AcademyHeroPreview";
 import { CinematicBackdrop } from "@/components/ui/CinematicBackdrop";
 import { VideoGrid, type AcademyVideoEntry } from "@/components/academy/VideoGrid";
 import { SiteContentBanner } from "@/components/layout/SiteContentBanner";
+import { AnnouncementCenter } from "@/components/layout/AnnouncementCenter";
 import { Testimonials } from "@/components/academy/Testimonials";
 import { StickyCta } from "@/components/ui/StickyCta";
 import { PortfolioCard } from "@/components/cards/PortfolioCard";
@@ -257,6 +258,12 @@ export default async function AcademyPage({
   return (
     <>
       <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <AnnouncementCenter
+        announcements={site.announcementBars ?? []}
+        events={publishedEducation.filter((item) => item.type === "workshop" || item.type === "webinar").map((item) => ({ slug: item.slug, type: item.type, title: item.title, liveEvent: item.liveEvent }))}
+        page="academy"
+        locale={locale}
+      />
       {academyBanners.map((banner) => <SiteContentBanner key={banner.id} banner={banner} locale={locale} />)}
 
       {/* ── Hero ──────────────────────────────────────────────── */}

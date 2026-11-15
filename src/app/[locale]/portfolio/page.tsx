@@ -2,6 +2,7 @@ import { isStudioPortfolio, isPublishedPortfolio } from "@/lib/artist/portfolio"
 import type { Metadata } from "next";
 import { Fragment, Suspense } from "react";
 import { PortfolioHero } from "@/components/portfolio/PortfolioHero";
+import { AnnouncementCenter } from "@/components/layout/AnnouncementCenter";
 import { RAZIEH_PROFILE } from "@/lib/razieh-profile";
 import { PortfolioGrid } from "@/components/portfolio/PortfolioGrid";
 import { TrustBar } from "@/components/portfolio/TrustBar";
@@ -56,9 +57,13 @@ export default async function PortfolioPage({
 
   // Studio-specific media; never use an artist portfolio's first item as the hero.
   const instructor = site.artists.find(artist => artist.id === "artist-razieh-khairipour");
+  const announcementEvents = publicEducationItems(content.education)
+    .filter((item) => item.type === "workshop" || item.type === "webinar")
+    .map((item) => ({ slug: item.slug, type: item.type, title: item.title, liveEvent: item.liveEvent }));
 
   return (
     <>
+      <AnnouncementCenter announcements={content.announcementBars ?? []} events={announcementEvents} page="portfolio" locale={locale} />
       <PortfolioHero
         locale={locale}
         background="/images/hero/hero-back.webp"

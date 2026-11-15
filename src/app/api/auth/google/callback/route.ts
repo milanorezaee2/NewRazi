@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { safeReturnPath } from "@/lib/auth/return-path";
 import { createUser, findUserByEmail, upgradeUserToArtist } from "@/lib/data/users";
 import { createSessionToken, SESSION_COOKIE, sessionCookieOptions, sessionUserFromStored } from "@/lib/auth";
 import { sendAdminPushSafely } from "@/lib/admin-push";
@@ -40,7 +41,11 @@ export async function GET(req: NextRequest) {
 
   /** Bail out to the form with a reason the UI can translate. */
   const fail = (errorCode: string) => {
-    const target = new URL(`/${locale}/${entry}`, appOrigin(req));
+    const fallback = `/${locale}/${entry}`;
+    const targetPath = payload?.r && payload.r.startsWith(`/${locale}/`)
+      ? safeReturnPath(payload.r, locale, fallback)
+      : fallback;
+    const target = new URL(targetPath, appOrigin(req));
     target.searchParams.set("google_error", errorCode);
     const res = NextResponse.redirect(target);
     res.cookies.set(GOOGLE_STATE_COOKIE, "", { ...sessionCookieOptions(req), maxAge: 0 });

@@ -69,6 +69,7 @@ export default function WebinarViewer({
   chatEnabled = true,
   qaEnabled = true,
   requiresAccount = false,
+  autoJoin = false,
   prefillName = "",
   prefillEmail = "",
   hlsUrl,
@@ -86,6 +87,7 @@ export default function WebinarViewer({
   chatEnabled?: boolean;
   qaEnabled?: boolean;
   requiresAccount?: boolean;
+  autoJoin?: boolean;
   prefillName?: string;
   prefillEmail?: string;
   /** Same-origin entitlement-checked HLS proxy; external HLS URLs are never passed to the browser. */
@@ -251,6 +253,21 @@ export default function WebinarViewer({
     });
   }, [phase, identity, postSignal, isFA]);
 
+  // Persist a best-effort room exit so reported time-on-room can be closed promptly.
+  useEffect(() => {
+    if (phase !== "room" || !identity) return;
+    const current = identity;
+    return () => {
+      void fetch(signalUrl, {
+        method: "POST",
+        credentials: "include",
+        keepalive: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "leave", viewerId: current.viewerId }),
+      }).catch(() => undefined);
+    };
+  }, [phase, identity, signalUrl]);
+
   /* ── poll viewer endpoint ────────────────────────────────────── */
 
   const pollViewer = useCallback(async () => {
@@ -403,6 +420,7 @@ export default function WebinarViewer({
         registeredCount={registeredCount}
         chatEnabled={chatEnabled}
         requiresAccount={requiresAccount}
+        autoJoin={autoJoin}
         status={activeEventStatus}
         prefillName={prefillName}
         prefillEmail={prefillEmail}

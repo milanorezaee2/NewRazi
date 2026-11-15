@@ -49,7 +49,7 @@ export function TestimonialsEditor({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="academy-admin__testimonials space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-white p-4">
         <div>
           <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">

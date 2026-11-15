@@ -120,8 +120,8 @@ export default function WebinarBroadcast({ slug, title }: { slug: string; title:
 
   const signalUrl = `/api/webinar/${encodeURIComponent(slug)}/signal`;
   const attendeeUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/fa/academy/${slug}/live`
-    : `/fa/academy/${slug}/live`;
+    ? `${window.location.origin}/fa/academy/${slug}/live?enter=1`
+    : `/fa/academy/${slug}/live?enter=1`;
 
   const copyAttendeeLink = async () => {
     setShareError(false);

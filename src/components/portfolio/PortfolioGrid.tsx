@@ -72,9 +72,9 @@ export function PortfolioGrid({ items, categories, initialDiscipline }: Props) {
       {sorted.length === 0 ? (
         <p className="container-x mt-20 text-center text-body text-muted">{dict.common.empty}</p>
       ) : (
-        <div className="container-x mt-10 columns-2 gap-3 pb-24 sm:gap-4 lg:columns-3" style={{ columnFill: "balance" }}>
+        <div className="portfolio-work-grid container-x mt-10 grid grid-cols-2 items-start gap-3 pb-24 sm:gap-4 lg:grid-cols-3">
           {sorted.map((c, i) => (
-            <Reveal key={c.id} delay={i * 50} className="mb-3 break-inside-avoid sm:mb-4">
+            <Reveal key={c.id} delay={i * 50}>
               <Link
                 href={href(locale, `/portfolio/${c.slug}`)}
                 className="group relative block overflow-hidden rounded-lg bg-background-secondary"

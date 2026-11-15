@@ -62,7 +62,7 @@ export function PortfolioHeroVideo({
           poster={poster}
           controls={started && !failed}
           playsInline
-          preload="metadata"
+          preload="none"
           aria-label={
             fa ? "ویدئوی پیش‌نمایش آتلیه رزی" : "Rosie Atelier preview video"
           }
@@ -81,7 +81,7 @@ export function PortfolioHeroVideo({
           onEnded={() => setStarted(false)}
         />
         {(!started || failed) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/25 px-5">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/8 px-5">
             <button
               type="button"
               onClick={play}

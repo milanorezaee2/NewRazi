@@ -91,8 +91,8 @@ export function CinematicBackdrop({
             fill
             priority={priority && frameIndex === 0}
             sizes="100vw"
-            className={cn(
-              "object-cover object-center",
+              className={cn(
+              "object-cover object-center brightness-[1.05] saturate-[1.08]",
               /* The push runs once per frame and is skipped for reduced motion. */
               !reduced && "hero-kenburns",
             )}
@@ -105,15 +105,15 @@ export function CinematicBackdrop({
         <>
           {/* Denser on small screens, where the copy sits over the whole frame. */}
           <div
-            className="absolute inset-0 bg-[#0d1512]/60 md:bg-[#0d1512]/40"
+            className="absolute inset-0 bg-[#0d1512]/18 md:bg-[#0d1512]/14"
             style={
               typeof tint === "number"
                 ? { backgroundColor: `rgba(13, 21, 18, ${(Math.min(90, Math.max(0, tint)) / 100).toFixed(2)})` }
                 : undefined
             }
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0d1512]/92 via-[#0d1512]/62 to-[#0d1512]/25 rtl:bg-gradient-to-l" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0d1512] via-[#0d1512]/30 to-[#0d1512]/40 md:via-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0d1512]/78 via-[#0d1512]/34 to-[#0d1512]/6 rtl:bg-gradient-to-l" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d1512]/60 via-[#0d1512]/14 to-[#0d1512]/6 md:via-transparent" />
         </>
       ) : (
         <>

@@ -6,7 +6,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 export function LocaleChrome({ children, before, after }: { children: React.ReactNode; before: React.ReactNode; after: React.ReactNode }) {
   const pathname = usePathname();
   const isFullscreen = /\/academy\/[^/]+\/(live|broadcast)\/?$/.test(pathname);
-  const isAuthPage = /^\/(?:fa|en)\/(?:login|signup)\/?$/.test(pathname);
+  const isAuthPage = /^\/(?:fa|en)\/(?:login|signup|academy\/[^/]+\/join)\/?$/.test(pathname);
 
   if (isFullscreen) {
     return (

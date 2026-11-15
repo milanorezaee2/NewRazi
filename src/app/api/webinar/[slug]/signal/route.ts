@@ -10,6 +10,7 @@ import { withNoStore } from "@/lib/http";
 import { clientIp, recordAttempt, retryAfterSeconds, tooManyAttempts } from "@/lib/rate-limit";
 import { getContent, getContentWithEtag, saveContent } from "@/lib/data/store";
 import { createReservation, getAllReservations } from "@/lib/data/reservations";
+import { closeLiveAttendance, recordLiveAttendance, touchLiveAttendance } from "@/lib/data/webinar-attendance";
 import { effectiveLiveStatus, hasGrantedReservation, isFreePrice, safeExternalHttpsUrl } from "@/lib/academy-live";
 import { isPublishedEducation } from "@/lib/academy/publication";
 
@@ -43,6 +44,7 @@ export interface QAQuestion {
 }
 export interface Attendee {
   viewerId: string;
+  userId: string;
   name: string;
   email: string;
   joinedAt: number;
@@ -57,6 +59,9 @@ interface Room {
   chat: ChatMessage[];
   qa: QAQuestion[];
   attendees: Map<string, Attendee>;
+  attendanceLogged: Set<string>;
+  externalHandoffsLogged: Set<string>;
+  attendanceLastTouch: Map<string, number>;
   status: "scheduled" | "live" | "ended";
   createdAt: number;
 }
@@ -79,6 +84,9 @@ function getOrCreateRoom(slug: string): Room {
       chat: [],
       qa: [],
       attendees: new Map(),
+      attendanceLogged: new Set(),
+      externalHandoffsLogged: new Set(),
+      attendanceLastTouch: new Map(),
       status: "scheduled",
       createdAt: Date.now(),
     };
@@ -150,6 +158,7 @@ function pruneInactiveAttendees(room: Room) {
     room.offers.delete(viewerId);
     room.broadcasterIce.delete(viewerId);
     room.broadcasterCursor.delete(viewerId);
+    room.attendanceLastTouch.delete(viewerId);
   }
 }
 
@@ -165,14 +174,22 @@ async function iceServersResponse(request: Request, slug: string) {
   const url = new URL(request.url);
   const viewerId = url.searchParams.get("viewerId") ?? "";
   const client = url.searchParams.get("client");
-  const session = await getAdminSession();
+  const adminSession = await getAdminSession();
   if (client === "broadcaster") {
-    if (!session || session.role !== "admin") return error("unauthorized", 401);
+    if (!adminSession || adminSession.role !== "admin") return error("unauthorized", 401);
   } else {
     const event = await getLiveEvent(slug);
     if (!event) return error("event_not_found", 404);
+    const session = await getSession();
     const room = rooms.get(slug);
-    if (!VIEWER_ID_PATTERN.test(viewerId) || !room || !attendeeFor(room, viewerId)) return error("attendee_required", 401);
+    const attendee = room?.attendees.get(viewerId);
+    if (!session || !VIEWER_ID_PATTERN.test(viewerId) || !room || !attendee || (session.role !== "admin" && attendee.userId !== session.id)) return error("attendee_required", 401);
+    attendeeFor(room, viewerId);
+    const now = Date.now();
+    if (now - (room.attendanceLastTouch.get(viewerId) ?? 0) >= 20_000) {
+      room.attendanceLastTouch.set(viewerId, now);
+      void touchLiveAttendance({ eventSlug: slug, eventType: event.item.type as "workshop" | "webinar", eventTitle: event.item.title, userId: attendee.userId, name: attendee.name, email: attendee.email, viewerId }).catch((cause) => console.error("[webinar/attendance-heartbeat]", cause));
+    }
   }
 
   const urls = (process.env.TURN_URLS ?? "").split(",").map((value) => value.trim()).filter((value) => /^turns?:/i.test(value));
@@ -180,7 +197,7 @@ async function iceServersResponse(request: Request, slug: string) {
   const iceServers: RTCIceServer[] = [...STUN_SERVERS];
   if (urls.length && sharedSecret) {
     const expiresAt = Math.floor(Date.now() / 1000) + 60 * 60;
-    const username = `${expiresAt}:${client === "broadcaster" ? session!.id : viewerId}`;
+    const username = `${expiresAt}:${client === "broadcaster" ? adminSession!.id : viewerId}`;
     const credential = crypto.createHmac("sha1", sharedSecret).update(username).digest("base64");
     iceServers.push({ urls, username, credential });
   }
@@ -207,9 +224,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
 
   if (role === "viewer") {
     const viewerId = url.searchParams.get("viewerId") ?? "";
-    if (!VIEWER_ID_PATTERN.test(viewerId) || !room || !attendeeFor(room, viewerId)) return error("attendee_required", 401);
+    const session = await getSession();
+    const attendee = room?.attendees.get(viewerId);
+    if (!session || !VIEWER_ID_PATTERN.test(viewerId) || !room || !attendee || (session.role !== "admin" && attendee.userId !== session.id)) return error("attendee_required", 401);
+    attendeeFor(room, viewerId);
     const found = await getLiveEvent(slug);
     if (!found) return error("event_not_found", 404);
+    const now = Date.now();
+    if (now - (room.attendanceLastTouch.get(viewerId) ?? 0) >= 20_000) {
+      room.attendanceLastTouch.set(viewerId, now);
+      void touchLiveAttendance({ eventSlug: slug, eventType: found.item.type as "workshop" | "webinar", eventTitle: found.item.title, userId: attendee.userId, name: attendee.name, email: attendee.email, viewerId }).catch((cause) => console.error("[webinar/attendance-heartbeat]", cause));
+    }
     const configuredStatus = effectiveLiveStatus(found.config);
     const status = room.status === "ended" || configuredStatus === "ended" || configuredStatus === "cancelled"
       ? "ended"
@@ -340,17 +365,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     return NextResponse.json({ ok: true }, withNoStore());
   }
 
-  if (["register", "join", "answer", "ice-viewer", "chat", "qa"].includes(type)) {
+  if (["register", "join", "leave", "answer", "ice-viewer", "chat", "qa"].includes(type)) {
     const publicEvent = await getLiveEvent(slug);
     if (!publicEvent) return error("event_not_found", 404);
     const viewerId = typeof body.viewerId === "string" ? body.viewerId : "";
     if (!VIEWER_ID_PATTERN.test(viewerId)) return error("invalid_viewer_id", 400);
     const room = getOrCreateRoom(slug);
+    const session = await getSession();
+    if (!session) return error("sign_in_required", 401);
 
     if (type === "register") {
       pruneInactiveAttendees(room);
-      const name = typeof body.name === "string" ? body.name.trim().slice(0, 80) : "";
-      const submittedEmail = typeof body.email === "string" ? body.email.trim().slice(0, 200).toLowerCase() : "";
+      const name = session.name.trim().slice(0, 80);
+      const submittedEmail = session.email.trim().slice(0, 200).toLowerCase();
       if (name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(submittedEmail)) return error("invalid_attendee", 400);
 
       const { item, config } = publicEvent;
@@ -358,7 +385,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       if (status === "ended" || status === "cancelled") return error("event_closed", 409);
       if (!config.isOnline) return error("event_not_online", 409);
 
-      const session = await getSession();
       const reservations = await getAllReservations();
       const free = isFreePrice(item.price);
       const approved = hasGrantedReservation(reservations, slug, session);
@@ -375,7 +401,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       if (!existing && maxViewers > 0 && room.attendees.size >= maxViewers) return error("viewer_limit", 409);
       if (room.status === "ended") return error("event_closed", 409);
 
-      const attendeeEmail = session?.email.trim().toLowerCase() ?? submittedEmail;
+      const attendeeEmail = session.email.trim().toLowerCase();
       try {
         await createReservation({
           eventSlug: slug,
@@ -383,7 +409,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
           eventTitle: item.title,
           startsAt: config.startsAt,
           capacity: config.capacity,
-          userId: session?.id,
+          userId: session.id,
           name,
           email: attendeeEmail,
           accessGranted: free,
@@ -397,26 +423,51 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       const current = room.attendees.get(viewerId);
       room.attendees.set(viewerId, {
         viewerId,
+        userId: session.id,
         name,
         email: attendeeEmail,
         joinedAt: current?.joinedAt ?? Date.now(),
         lastSeen: Date.now(),
       });
 
-      // Only return a private external meeting URL after the entitlement check above.
+      // External services do not report attendance back to this site, so label this honestly as a hand-off.
       if (externalJoinUrl) {
+        if (!room.externalHandoffsLogged.has(viewerId)) {
+          await recordLiveAttendance({ eventSlug: slug, eventType: item.type as "workshop" | "webinar", eventTitle: item.title, userId: session.id, name, email: attendeeEmail, viewerId, mode: "external" });
+          room.externalHandoffsLogged.add(viewerId);
+        }
         return NextResponse.json({ ok: true, joinUrl: externalJoinUrl.href }, withNoStore());
       }
       return NextResponse.json({ ok: true }, withNoStore());
     }
 
-    if (!room.attendees.has(viewerId)) return error("attendee_required", 401);
+    const attendee = room.attendees.get(viewerId);
+    if (!attendee || (session.role !== "admin" && attendee.userId !== session.id)) return error("attendee_required", 401);
+
+    if (type === "leave") {
+      if (room.attendanceLogged.has(viewerId)) {
+        await closeLiveAttendance({ eventSlug: slug, eventType: publicEvent.item.type as "workshop" | "webinar", eventTitle: publicEvent.item.title, userId: attendee.userId, name: attendee.name, email: attendee.email, viewerId });
+      }
+      room.attendees.delete(viewerId);
+      room.viewers.delete(viewerId);
+      room.offers.delete(viewerId);
+      room.broadcasterIce.delete(viewerId);
+      room.broadcasterCursor.delete(viewerId);
+      room.attendanceLastTouch.delete(viewerId);
+      return NextResponse.json({ ok: true }, withNoStore());
+    }
     if (room.status === "ended") return error("event_closed", 409);
 
     if (type === "join") {
-      room.viewers.set(viewerId, room.viewers.get(viewerId) ?? { answer: null, iceCandidates: [], lastSeen: Date.now() });
+      const now = Date.now();
+      if (!room.attendanceLogged.has(viewerId)) {
+        await recordLiveAttendance({ eventSlug: slug, eventType: publicEvent.item.type as "workshop" | "webinar", eventTitle: publicEvent.item.title, userId: attendee.userId, name: attendee.name, email: attendee.email, viewerId, mode: "room" });
+        room.attendanceLogged.add(viewerId);
+        room.attendanceLastTouch.set(viewerId, now);
+      }
+      room.viewers.set(viewerId, room.viewers.get(viewerId) ?? { answer: null, iceCandidates: [], lastSeen: now });
       const state = room.viewers.get(viewerId)!;
-      state.lastSeen = Date.now();
+      state.lastSeen = now;
       return NextResponse.json({ ok: true }, withNoStore());
     }
     if (type === "answer") {

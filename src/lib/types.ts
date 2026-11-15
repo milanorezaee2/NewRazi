@@ -560,6 +560,10 @@ export interface Banner {
   href: string;
   enabled: boolean;
   placement: "top" | "shop" | "academy";
+  /** Selected live event for a dedicated room-entry CTA on promotional banners. */
+  eventSlug?: string;
+  showJoinButton?: boolean;
+  joinLabel?: Localized;
 }
 
 /**
@@ -583,6 +587,8 @@ export interface Banner {
  *                  ولی پیام پیشوند، دکمه CTA و رنگ‌ها قابل ویرایش هستند.
  */
 export type AnnouncementBarKind = "live-webinar" | "webinar" | "sale" | "custom";
+export type AnnouncementDisplay = "bar" | "popup";
+export type AnnouncementScope = "all" | "portfolio" | "academy";
 
 /**
  * نوع انیمیشن ورود نوار اعلان به صفحه.
@@ -599,12 +605,32 @@ export interface AnnouncementBarConfig {
   id: ID;
   kind: AnnouncementBarKind;
   enabled: boolean;
+  /** Presentation mode: a compact top bar or a dismissible popup. */
+  display?: AnnouncementDisplay;
+  /** Public destination(s) where this announcement can appear. */
+  scope?: AnnouncementScope;
+  /** Optional academy event slug; activation window is derived from its schedule. */
+  eventSlug?: string;
+  /** Minutes before a linked event when its announcement may start. */
+  eventLeadMinutes?: number;
+  /** Optional manual schedule for non-event announcements. */
+  startsAt?: string;
+  /** Delay before a popup is shown after page load. */
+  delaySeconds?: number;
+  /** Popup frequency, per browser session or every visit. */
+  frequency?: "every-visit" | "once-session";
+  /** Optional image displayed in popup mode. */
+  imageUrl?: string;
   /** متن نوار به دو زبان — برای live-webinar این متن قبل از نام رویداد نمایش داده می‌شود */
   message: Localized;
   /** لینک مقصد هنگام کلیک روی نوار — برای live-webinar می‌توان خالی گذاشت (لینک رویداد خودکار می‌شود) */
   href: string;
   /** برچسب دکمه CTA */
   ctaLabel?: Localized;
+  /** Show an independent event-room entry button next to the detail CTA. */
+  showJoinButton?: boolean;
+  /** Localized label for the live-room entry button. */
+  joinLabel?: Localized;
   /** رنگ پس‌زمینه (CSS) — اگر خالی باشد از رنگ پیش‌فرض نوع استفاده می‌شود */
   bgColor?: string;
   /** رنگ متن (CSS) */

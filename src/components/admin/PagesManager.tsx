@@ -83,6 +83,13 @@ export function PagesManager({
   };
 
   const hiddenCount = pages[page].sections.filter((section) => !section.visible).length;
+  const subTabs: { id: SubTab; label: string; icon: React.ReactNode }[] = [
+    { id: "hero", label: "هیرو سینمایی", icon: <Monitor className="h-4 w-4" /> },
+    { id: "sections", label: `بخش‌ها (${pages[page].sections.length})`, icon: <Layers className="h-4 w-4" /> },
+    ...(page === "portfolio"
+      ? [{ id: "style" as SubTab, label: "ظاهر و مدرس", icon: <Palette className="h-4 w-4" /> }]
+      : []),
+  ];
 
   return (
     <div className="space-y-5">
@@ -109,54 +116,51 @@ export function PagesManager({
         </Link>
       </div>
 
-      {/* Page tabs */}
-      <div className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-background-secondary p-1">
-        {PAGE_TABS.map((tab) => {
-          const state = pages[tab.id];
-          const hidden = state.sections.filter((section) => !section.visible).length;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setPage(tab.id)}
-              className={cn(
-                "flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                page === tab.id ? "bg-white text-foreground shadow-sm" : "text-foreground-secondary hover:text-foreground",
-              )}
-            >
-              {tab.icon}
-              {tab.label}
-              <span className="rounded-full bg-border/60 px-1.5 py-0.5 text-[10px] tabular">
-                {state.hero.slides.length} فریم · {hidden ? `${hidden} پنهان` : "کامل"}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <div className="pages-manager__workspace">
+        <aside className="pages-manager__sidebar" aria-label="انتخاب صفحه و بخش مدیریت">
+          <div className="pages-manager__page-nav" role="group" aria-label="صفحه عمومی">
+            {PAGE_TABS.map((tab) => {
+              const state = pages[tab.id];
+              const hidden = state.sections.filter((section) => !section.visible).length;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  aria-pressed={page === tab.id}
+                  onClick={() => {
+                    setPage(tab.id);
+                    if (tab.id === "academy" && sub === "style") setSub("hero");
+                  }}
+                  className={cn("pages-manager__nav-item", page === tab.id && "is-active")}
+                >
+                  <span className="pages-manager__nav-icon">{tab.icon}</span>
+                  <span className="min-w-0 flex-1 text-start">{tab.label}</span>
+                  <span className="pages-manager__nav-count">
+                    {state.hero.slides.length} فریم · {hidden ? `${hidden} پنهان` : "کامل"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-      {/* Sub tabs */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { id: "hero" as SubTab, label: "هیرو سینمایی", icon: <Monitor className="h-3.5 w-3.5" /> },
-          { id: "sections" as SubTab, label: `بخش‌ها (${pages[page].sections.length})`, icon: <Layers className="h-3.5 w-3.5" /> },
-          ...(page === "portfolio"
-            ? [{ id: "style" as SubTab, label: "ظاهر و مدرس", icon: <Palette className="h-3.5 w-3.5" /> }]
-            : []),
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setSub(tab.id)}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors",
-              sub === tab.id
-                ? "bg-[#1e2230] text-white"
-                : "border border-border bg-white text-foreground-secondary hover:border-accent/60",
-            )}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
-      </div>
+          <div className="pages-manager__section-nav" role="tablist" aria-label="تنظیمات صفحه">
+            {subTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={sub === tab.id}
+                onClick={() => setSub(tab.id)}
+                className={cn("pages-manager__nav-item", sub === tab.id && "is-active")}
+              >
+                <span className="pages-manager__nav-icon">{tab.icon}</span>
+                <span className="min-w-0 flex-1 text-start">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <main className="pages-manager__content">
 
       {/* Hero */}
       {sub === "hero" && (
@@ -237,6 +241,8 @@ export function PagesManager({
           onChange={(portfolioHero: PortfolioHeroSettings) => update({ portfolioHero })}
         />
       )}
+        </main>
+      </div>
     </div>
   );
 }

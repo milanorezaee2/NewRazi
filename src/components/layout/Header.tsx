@@ -8,6 +8,7 @@ import { useAuth, useLocale, useTheme } from "@/components/providers/AppProvider
 import { SignOutButton } from "@/components/profile/SignOutButton";
 import { cn, href } from "@/lib/utils";
 import { Logo } from "./Logo";
+import { MobileSiteNavigation } from "./MobileSiteNavigation";
 
 /**
  * Site header.
@@ -223,6 +224,7 @@ export function Header() {
         </div>
       </header>
 
+      <MobileSiteNavigation />
       <MobileMenu open={mobile} onClose={() => setMobile(false)} links={links} switchHref={switchHref} otherLocale={otherLocale} />
     </>
   );

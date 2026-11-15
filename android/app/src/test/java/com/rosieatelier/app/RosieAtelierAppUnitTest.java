@@ -1,4 +1,4 @@
-package com.rosieatelier.admin;
+package com.rosieatelier.app;
 
 import static org.junit.Assert.*;
 
@@ -9,7 +9,7 @@ import org.junit.Test;
  *
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
-public class AdminAppUnitTest {
+public class RosieAtelierAppUnitTest {
 
     @Test
     public void addition_isCorrect() throws Exception {

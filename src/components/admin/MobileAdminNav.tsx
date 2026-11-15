@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, GalleryHorizontalEnd, LayoutDashboard, Menu, Save, Sparkles } from "lucide-react";
+import { BookOpen, GalleryHorizontalEnd, LayoutDashboard, Menu, Save, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -29,7 +29,7 @@ export function MobileAdminNav({
     { id: "dashboard", label: "داشبورد", icon: <LayoutDashboard className="h-5 w-5" /> },
     { id: "education", label: "آکادمی", icon: <BookOpen className="h-5 w-5" /> },
     { id: "portfolios", label: "پورتفولیو", icon: <GalleryHorizontalEnd className="h-5 w-5" /> },
-    { id: "banners", label: "بنرها", icon: <Sparkles className="h-5 w-5" /> },
+    { id: "users", label: "کاربران", icon: <Users className="h-5 w-5" /> },
   ];
 
   const isActive = (id: string) => activeSection === id;

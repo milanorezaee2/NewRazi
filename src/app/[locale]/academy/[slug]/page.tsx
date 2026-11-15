@@ -332,7 +332,7 @@ export default async function EducationDetail({ params }: Props) {
               )}
               {e.liveEvent?.isOnline && (e.type === "workshop" || e.type === "webinar") && (
                 <Link
-                  href={href(locale, `/academy/${e.slug}/live`)}
+                  href={href(locale, `/academy/${e.slug}/live?enter=1`)}
                   className="inline-flex w-full items-center justify-center rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground hover:border-accent hover:text-accent transition-colors"
                 >
                   {locale === "fa" ? "صفحه ورود به رویداد" : "Event access page"}

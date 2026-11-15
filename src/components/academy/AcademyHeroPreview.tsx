@@ -73,7 +73,7 @@ export function AcademyHeroPreview({
       ) : src ? (
         <video
           ref={ref}
-          className="absolute inset-0 h-full w-full object-cover brightness-[0.78]"
+          className="absolute inset-0 h-full w-full object-cover brightness-[1.02] saturate-[1.08]"
           src={src}
           poster={poster || undefined}
           muted

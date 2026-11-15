@@ -81,4 +81,4 @@ const backgroundFile = path.join(resRoot, "values/ic_launcher_background.xml");
 const backgroundXml = await fs.readFile(backgroundFile, "utf8");
 await fs.writeFile(backgroundFile, backgroundXml.replace(/#(?:FFFFFF|1E2230)/gi, "#1E2230"));
 
-console.log("Rosie Admin launcher icons and branded splash screens generated.");
+console.log("Rosie Atelier launcher icons and branded splash screens generated.");

@@ -1,4 +1,4 @@
-package com.rosieatelier.admin;
+package com.rosieatelier.app;
 
 import static org.junit.Assert.*;
 
@@ -14,13 +14,13 @@ import org.junit.runner.RunWith;
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 @RunWith(AndroidJUnit4.class)
-public class AdminAppIdentityTest {
+public class RosieAtelierAppIdentityTest {
 
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.rosieatelier.admin", appContext.getPackageName());
+        assertEquals("com.rosieatelier.app", appContext.getPackageName());
     }
 }

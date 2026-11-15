@@ -38,7 +38,12 @@ export async function GET(req: NextRequest) {
 
   if (!result.ok) {
     const locale = req.nextUrl.searchParams.get("l") === "en" ? "en" : "fa";
-    const res = NextResponse.redirect(formUrl(req, locale, "login", `email_${result.error}`));
+    const entry = req.nextUrl.searchParams.get("entry") === "signup" ? "signup" : "login";
+    const fallback = `/${locale}/${entry}`;
+    const returnTo = safeReturnPath(req.nextUrl.searchParams.get("returnTo"), locale, fallback);
+    const target = new URL(returnTo, appOrigin(req));
+    target.searchParams.set("email_error", `email_${result.error}`);
+    const res = NextResponse.redirect(target);
     res.headers.set("cache-control", "private, no-store");
     return res;
   }

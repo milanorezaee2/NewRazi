@@ -18,8 +18,14 @@ interface AuthFormProps {
   mode: "login" | "signup";
   /** Role pre-selected for signup (e.g. "artist" from /creators/join) */
   defaultRole?: "user" | "artist";
+  /** Called after a successful login instead of navigating to the default account page. */
+  onLoginSuccess?: () => void;
   /** Called with credentials right after a successful signup, before navigation */
   onSignupSuccess?: (email: string, password: string) => void;
+  /** Same-origin path used by passwordless and OAuth flows after authentication. */
+  returnTo?: string;
+  /** Event-specific auth screens provide their own tab switch and keep the flow on the event. */
+  hideAccountSwitch?: boolean;
   /** Pre-filled values (used when arriving from signup → login transition) */
   prefill?: { email?: string; password?: string };
   /** When true the submit button shows a loading-like state */
@@ -59,7 +65,7 @@ const ERROR_MESSAGES: Record<string, { fa: string; en: string }> = {
   google_no_account: { fa: "حسابی با این ایمیل وجود ندارد؛ ابتدا ثبت‌نام کنید.", en: "No account exists for this e-mail yet — please sign up first." },
 };
 
-export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: AuthFormProps) {
+export function AuthForm({ mode, onLoginSuccess, onSignupSuccess, returnTo, hideAccountSwitch = false, prefill, autoSubmitting }: AuthFormProps) {
   const { locale, dict } = useLocale();
   const { login, signup } = useAuth();
   const router = useRouter();
@@ -160,7 +166,8 @@ export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: Aut
       setBusy(false);
       if (!r.ok) return setErr(getError(r.error ?? "invalid"));
       if (!(await sessionCookieWorks())) return setErr(getError("session_cookie_blocked"));
-      router.push(href(locale, "/academy"));
+      if (onLoginSuccess) onLoginSuccess();
+      else router.push(href(locale, "/academy"));
       return;
     }
 
@@ -169,6 +176,7 @@ export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: Aut
     const r = await signup(name, email, password, role);
     setBusy(false);
     if (!r.ok) return setErr(getError(r.error ?? "invalid"));
+    if (!(await sessionCookieWorks())) return setErr(getError("session_cookie_blocked"));
     if (onSignupSuccess) {
       onSignupSuccess(email, password);
       return;
@@ -181,6 +189,7 @@ export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: Aut
     return (
       <EmailCodeForm
         entry={mode}
+        returnTo={returnTo}
         onBack={() => {
           setMethod("password");
           setErr("");
@@ -304,6 +313,7 @@ export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: Aut
         locale={locale}
         entry={mode}
         role={role}
+        returnTo={returnTo}
         disabled={busy || autoSubmitting}
         beforeStart={allowGoogleStart}
         onError={setErr}
@@ -328,7 +338,7 @@ export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: Aut
         </span>
       </button>
 
-      <p className="text-center text-sm text-foreground-secondary">
+      {!hideAccountSwitch && <p className="text-center text-sm text-foreground-secondary">
         {mode === "login" ? (
           <>
             {fa ? "حساب ندارید؟" : "No account?"}{" "}
@@ -350,7 +360,7 @@ export function AuthForm({ mode, onSignupSuccess, prefill, autoSubmitting }: Aut
             </Link>
           </>
         )}
-      </p>
+      </p>}
 
       {mode === "signup" && (
         <TermsModal

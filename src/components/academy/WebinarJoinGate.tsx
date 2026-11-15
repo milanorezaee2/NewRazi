@@ -7,7 +7,7 @@
  */
 
 import Image from "@/components/ui/SiteImage";
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Radio, Users, Clock, CalendarClock, ShieldCheck, Wifi, ArrowLeft } from "lucide-react";
 import { cn, faNum } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ interface Props {
   chatEnabled?: boolean;
   requiresAccount?: boolean;
   status: "scheduled" | "live" | "ended" | "cancelled";
+  autoJoin?: boolean;
   /** If user is already logged in, prefill name/email */
   prefillName?: string;
   prefillEmail?: string;
@@ -56,6 +57,7 @@ export function WebinarJoinGate({
   chatEnabled = true,
   requiresAccount = false,
   status,
+  autoJoin = false,
   prefillName = "",
   prefillEmail = "",
   onJoin,
@@ -66,6 +68,8 @@ export function WebinarJoinGate({
   const [email, setEmail] = useState(prefillEmail);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const autoStarted = useRef(false);
 
   // Try to restore guest identity from session
   useEffect(() => {
@@ -84,8 +88,7 @@ export function WebinarJoinGate({
   const spotsLeft = capacity && capacity > 0 ? capacity - registeredCount : null;
   const isFull = spotsLeft !== null && spotsLeft <= 0;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const registerForRoom = useCallback(async () => {
     setError(null);
     const trimName = name.trim();
     const trimEmail = email.trim().toLowerCase();
@@ -114,7 +117,7 @@ export function WebinarJoinGate({
           too_many_attempts: isFA ? "تعداد تلاش‌ها زیاد است؛ چند دقیقه دیگر دوباره امتحان کنید." : "Too many attempts. Please try again in a few minutes.",
           event_closed: isFA ? "این رویداد به پایان رسیده یا لغو شده است." : "This event has ended or was cancelled.",
           payment_pending: isFA ? "پرداخت هنوز تأیید نشده است؛ پس از تأیید مدیر، دوباره وارد شوید." : "Payment is not approved yet. Please return after the academy confirms it.",
-          sign_in_required: isFA ? "برای ورود به رویداد پولی باید با حساب ثبت‌نام‌شده وارد شوید." : "Sign in with the account used to register for this paid event.",
+          sign_in_required: isFA ? "برای ورود به اتاق پخش ابتدا وارد حساب کاربری خود شوید." : "Sign in to your site account before entering the live room.",
           viewer_limit: isFA ? "ظرفیت پخش هم‌زمان تکمیل است." : "The live stream has reached its concurrent viewer limit.",
           meeting_unavailable: isFA ? "لینک جلسه هنوز در دسترس نیست. با مدیر آکادمی تماس بگیرید." : "The meeting link is unavailable. Please contact the academy admin.",
         };
@@ -131,7 +134,30 @@ export function WebinarJoinGate({
     } finally {
       setLoading(false);
     }
+  }, [email, isFA, name, onJoin, slug]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    void registerForRoom();
   };
+
+  useEffect(() => {
+    if (!autoJoin || !prefillName || !prefillEmail || autoStarted.current || status === "ended" || status === "cancelled") return;
+    autoStarted.current = true;
+    let current = 3;
+    setCountdown(current);
+    const timer = window.setInterval(() => {
+      current -= 1;
+      if (current <= 0) {
+        window.clearInterval(timer);
+        setCountdown(null);
+        void registerForRoom();
+      } else {
+        setCountdown(current);
+      }
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [autoJoin, prefillEmail, prefillName, registerForRoom, status]);
 
   const formattedDate = startsAt
     ? new Date(startsAt).toLocaleString(isFA ? "fa-IR" : "en-US", {
@@ -148,6 +174,15 @@ export function WebinarJoinGate({
         <div className="absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue-900/15 blur-[100px]" />
       </div>
 
+      {countdown !== null && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-[#06090d]/90 px-5 text-center backdrop-blur-xl" role="status" aria-live="assertive">
+          <div className="event-countdown-card">
+            <span className="event-countdown-label">{isFA ? "در حال ورود به اتاق پخش" : "Entering the live room"}</span>
+            <strong key={countdown} className="event-countdown-number">{isFA ? faNum(countdown) : countdown}</strong>
+            <p>{isFA ? "اتصال امن شما در حال آماده‌سازی است…" : "Preparing your secure connection…"}</p>
+          </div>
+        </div>
+      )}
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12">
         <div className="w-full max-w-4xl">
           <div className="grid gap-8 lg:grid-cols-[1fr_420px] lg:items-start">
@@ -332,11 +367,11 @@ export function WebinarJoinGate({
                   <p className="text-center text-[11px] text-white/30">
                     {requiresAccount
                       ? isFA
-                        ? "این رویداد پولی است؛ ورود با حسابی که پرداخت آن تأیید شده لازم است."
-                        : "This paid event requires the approved account used for registration."
+                        ? "برای ثبت دقیق حضور، ورود با حساب کاربری سایت الزامی است."
+                        : "Sign in with your site account so your attendance is recorded accurately."
                       : isFA
-                        ? "برای رویداد رایگان، ورود با حساب سایت الزامی نیست."
-                        : "A site account is not required for this free event."}
+                        ? "پس از ورود به حساب، حضور شما در این رویداد ثبت می‌شود."
+                        : "Sign in to your account and your event registration will be recorded."}
                   </p>
                   </form>
                 </>

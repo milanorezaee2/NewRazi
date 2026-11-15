@@ -1080,8 +1080,8 @@ function JoinLinkCopier({ slug }: { slug: string }) {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const link = typeof window !== "undefined"
-    ? `${window.location.origin}/fa/academy/${slug}/live`
-    : `/fa/academy/${slug}/live`;
+    ? `${window.location.origin}/fa/academy/${slug}/live?enter=1`
+    : `/fa/academy/${slug}/live?enter=1`;
 
   const copy = async () => {
     setCopyError(false);
@@ -1676,7 +1676,7 @@ function ItemDrawer({
   const tc = TYPE_COLORS[form.type];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="academy-admin__drawer fixed inset-0 z-50 flex items-center justify-center p-4" dir="rtl">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
 
       <div className="relative flex w-full max-w-3xl max-h-[92vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
@@ -2100,7 +2100,7 @@ function ItemCard({
   const isLive = itemLiveStatus === "live";
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-medium">
+    <div className="academy-admin__item group relative flex flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-medium">
       {/* Cover */}
       <div className="relative h-40 bg-background-secondary overflow-hidden">
         {item.image ? (
@@ -2245,7 +2245,7 @@ function StatsBar({ items, registrationsBySlug, now }: { items: EducationItem[];
     : item.liveEvent?.registeredCount ?? 0), 0);
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="academy-admin__stats grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       {[
         { icon: <GraduationCap className="h-4 w-4" />, label: "دوره", value: courses, color: "text-blue-600" },
         { icon: <Film className="h-4 w-4" />, label: "ویدیوی آپلودشده", value: totalVideos, color: "text-purple-600" },
@@ -2370,7 +2370,7 @@ export function AcademyManager({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="academy-admin space-y-5">
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -2415,8 +2415,9 @@ export function AcademyManager({
       {/* Stats */}
       <StatsBar items={education} registrationsBySlug={registrationCounts} now={statusNow} />
 
-      {/* Panel tabs */}
-      <div className="flex gap-1 rounded-xl border border-border bg-background-secondary p-1">
+      {/* Main workspace: persistent section sidebar + the selected tab content */}
+      <div className="academy-admin__workspace">
+      <nav role="tablist" aria-label="بخش‌های آکادمی" className="academy-admin__tabs">
         {PANEL_TABS.map((tab) => {
           const count = tab.id === "analytics"
             ? education.length
@@ -2424,6 +2425,9 @@ export function AcademyManager({
           return (
             <button
               key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={panel === tab.id}
               onClick={() => { setPanel(tab.id); setFilterStatus("all"); setSearch(""); }}
               className={cn(
                 "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
@@ -2441,7 +2445,8 @@ export function AcademyManager({
             </button>
           );
         })}
-      </div>
+      </nav>
+      <div className="academy-admin__tab-content">
 
       {/* ── Student quotes ── */}
       {panel === "testimonials" ? (
@@ -2458,7 +2463,7 @@ export function AcademyManager({
       ) : panel === "testimonials" ? null : (
         <>
           {/* Filter + Search bar */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="academy-admin__filters flex flex-wrap items-center gap-2">
             {[
               { id: "all" as FilterStatus, label: "همه" },
               ...(panel !== "course" ? [
@@ -2467,7 +2472,7 @@ export function AcademyManager({
               ] : [{ id: "free" as FilterStatus, label: "رایگان" }]),
               { id: "pending" as FilterStatus, label: "در انتظار" },
             ].map(({ id, label }) => (
-              <button key={id} onClick={() => setFilterStatus(id)}
+              <button key={id} type="button" aria-pressed={filterStatus === id} onClick={() => setFilterStatus(id)}
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   filterStatus === id ? "bg-[#1e2230] text-white" : "bg-white border border-border text-foreground-secondary hover:border-accent/60"
@@ -2501,7 +2506,7 @@ export function AcademyManager({
               </Button>
             </div>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="academy-admin__grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filtered.map((item) => (
                 <ItemCard
                   key={item.id}
@@ -2530,6 +2535,8 @@ export function AcademyManager({
           defaultType={panel === "analytics" || panel === "testimonials" ? "course" : panel}
         />
       )}
+      </div>
+      </div>
     </div>
   );
 }

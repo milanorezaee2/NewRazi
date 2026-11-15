@@ -91,6 +91,7 @@ export function LiveEventBanner({ event, registeredCount: actualRegisteredCount 
   if (!isLive && !isScheduled) return null;
 
   const url = href(locale, `/academy/${event.slug}`);
+  const roomUrl = href(locale, `/academy/${event.slug}/live?enter=1`);
   const title = t(event.title, locale);
   const excerpt = t(event.excerpt, locale);
   const typeLabel = dict.common[event.type];
@@ -229,10 +230,24 @@ export function LiveEventBanner({ event, registeredCount: actualRegisteredCount 
             {isFull
               ? isFA ? "مشاهده رویداد" : "View event"
               : isLive
-                ? isFA ? "ورود به رویداد زنده" : "Join Live Event"
+                ? isFA ? "مشاهده جزئیات رویداد" : "View Event Details"
                 : isFA ? "ثبت‌نام در رویداد" : "Register for Event"}
             <ArrowUpRight className="h-4 w-4 rtl-flip arrow-shift" />
           </Link>
+          {event.liveEvent?.isOnline && (
+            <Link
+              href={roomUrl}
+              className={cn(
+                "inline-flex min-h-11 items-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition-all",
+                isLive
+                  ? "border-red-500/40 bg-red-600 text-white hover:bg-red-700"
+                  : "border-accent/30 bg-background text-foreground hover:border-accent hover:text-accent",
+              )}
+            >
+              <Radio className="h-4 w-4" />
+              {isFA ? "ورود به اتاق پخش" : "Enter live room"}
+            </Link>
+          )}
           {isFull && (
             <p className="max-w-xs text-caption text-muted md:text-end">
               {isFA

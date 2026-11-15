@@ -272,7 +272,7 @@ export function AcademyAnalytics({
   };
 
   return (
-    <div className="space-y-6" dir="rtl">
+    <div className="academy-admin__analytics space-y-6" dir="rtl">
 
       {/* ── Header ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -566,7 +566,7 @@ export function AcademyAnalytics({
                           )}
                           {(item.type === "webinar" || item.type === "workshop") && (
                             <Link
-                              href={href(locale, `/academy/${item.slug}/live`)}
+                              href={href(locale, `/academy/${item.slug}/live?enter=1`)}
                               target="_blank"
                               className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-muted hover:border-emerald-500 hover:text-emerald-600 transition-colors"
                               title="لینک ورود شرکت‌کنندگان"

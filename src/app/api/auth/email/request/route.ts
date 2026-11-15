@@ -7,6 +7,7 @@ import { sanitizePlainText } from "@/lib/security/sanitize";
 import { clientIp, recordAttempt, retryAfterSeconds, tooManyAttempts } from "@/lib/rate-limit";
 import { findUserByEmail } from "@/lib/data/users";
 import { appOrigin } from "@/lib/request-origin";
+import { safeReturnPath } from "@/lib/auth/return-path";
 import { createLoginCode, discardLoginCode } from "@/lib/auth/email-code";
 import { sendLoginMail } from "@/lib/auth/login-mail";
 import {
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest) {
     locale,
     entry,
     role: body?.role === "artist" ? "artist" : "user",
-    returnTo: sanitizePlainText(body?.returnTo ?? "").slice(0, 300),
+    returnTo: body?.returnTo ? safeReturnPath(sanitizePlainText(body.returnTo).slice(0, 300), locale) : `/${locale}/account`,
   });
 
   if (!created.ok) {
@@ -131,7 +132,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const link = `${appOrigin(req)}/api/auth/email/verify?token=${encodeURIComponent(created.token)}`;
+  const linkUrl = new URL("/api/auth/email/verify", appOrigin(req));
+  linkUrl.searchParams.set("token", created.token);
+  linkUrl.searchParams.set("l", locale);
+  linkUrl.searchParams.set("entry", entry);
+  if (body?.returnTo) linkUrl.searchParams.set("returnTo", safeReturnPath(sanitizePlainText(body.returnTo).slice(0, 300), locale));
+  const link = linkUrl.toString();
   const delivery = await sendLoginMail({ email, code: created.code, link, locale, isNewAccount }).catch(
     (error: unknown) => {
       console.error("[email-login] delivery threw before it could report a status:", error);

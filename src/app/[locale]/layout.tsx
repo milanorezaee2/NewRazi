@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "../globals.css";
+import "@/styles/mobile.css";
+import "../event-access.css";
 import { notFound } from "next/navigation";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { Fragment } from "react";
@@ -8,9 +10,10 @@ import { Footer } from "@/components/layout/Footer";
 import { LocaleChrome } from "@/components/layout/LocaleChrome";
 import { LOCALES, type Locale } from "@/lib/i18n/types";
 import { dictionaries } from "@/lib/i18n/dictionary";
-import { getCspNonce } from "@/lib/security/nonce";
 import { PublicPwaRegister } from "@/components/pwa/PublicPwaRegister";
 import { PublicPwaInstallPrompt } from "@/components/pwa/PublicPwaInstallPrompt";
+import { SiteContentBanner } from "@/components/layout/SiteContentBanner";
+import { getSite } from "@/lib/data/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -54,18 +57,16 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 
-const themeScript = `(function(){try{var t=localStorage.getItem('ra-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}})();`;
-
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   const { locale: raw } = await params;
-  const nonce = await getCspNonce();
   if (!LOCALES.includes(raw as Locale)) notFound();
   const locale = raw as Locale;
+  const site = await getSite();
+  const topBanners = site.banners.filter((banner) => banner.enabled && banner.placement === "top");
 
   return (
     <>
       <head>
-        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: themeScript }} suppressHydrationWarning />
         {/* preload only the fonts this locale actually renders first */}
         {locale === "fa" ? (
           <>
@@ -82,6 +83,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           before={
             <Fragment key="before">
               <a key="skip-link" href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:start-3 focus:z-[100] focus:rounded-md focus:bg-foreground focus:px-4 focus:py-2 focus:text-background">Skip to content</a>
+              {topBanners.map((banner) => <SiteContentBanner key={banner.id} banner={banner} locale={locale} />)}
               <Header key="header" />
             </Fragment>
           }

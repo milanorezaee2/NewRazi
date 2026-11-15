@@ -81,7 +81,7 @@ export const DEFAULT_PAGES: PagesSettings = {
         { id: "pf-4", src: "/images/portfolios/hero-03.jpg", captionFa: "میز طراحی", captionEn: "The drawing table" },
       ],
       intervalMs: 7000,
-      scrim: 60,
+      scrim: 18,
       eyebrowFa: "",
       eyebrowEn: "",
       titleFa: "",
@@ -100,7 +100,7 @@ export const DEFAULT_PAGES: PagesSettings = {
         { id: "ac-4", src: "/images/hero/hero-preview-02.jpg", captionFa: "رنگ‌بندی نهایی", captionEn: "Colourway" },
       ],
       intervalMs: 7500,
-      scrim: 60,
+      scrim: 18,
       eyebrowFa: "",
       eyebrowEn: "",
       titleFa: "",
@@ -113,7 +113,7 @@ export const DEFAULT_PAGES: PagesSettings = {
 };
 
 function clampScrim(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return 60;
+  if (typeof value !== "number" || !Number.isFinite(value)) return 18;
   return Math.min(90, Math.max(10, Math.round(value)));
 }
 

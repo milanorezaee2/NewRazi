@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getSite } from "@/lib/data/queries";
 import { getAllReservations } from "@/lib/data/reservations";
 import { getSession } from "@/lib/auth";
@@ -11,7 +11,7 @@ import WebinarViewer from "@/components/academy/WebinarViewer";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ enter?: string }> };
 
 function AccessNotice({ locale, title, message, slug, showLogin = false }: { locale: Locale; title: string; message: string; slug: string; showLogin?: boolean }) {
   return (
@@ -28,8 +28,8 @@ function AccessNotice({ locale, title, message, slug, showLogin = false }: { loc
   );
 }
 
-export default async function LivePage({ params }: Props) {
-  const { locale, slug } = await params;
+export default async function LivePage({ params, searchParams }: Props) {
+  const [{ locale, slug }, query] = await Promise.all([params, searchParams]);
   const [site, reservations, session] = await Promise.all([getSite(), getAllReservations(), getSession()]);
   const item = site.education.find((entry) => isPublishedEducation(entry) && entry.slug === slug && (entry.type === "webinar" || entry.type === "workshop"));
   if (!item) notFound();
@@ -46,6 +46,11 @@ export default async function LivePage({ params }: Props) {
       message={eventStatus === "cancelled"
         ? locale === "fa" ? "این رویداد لغو شده است." : "This event has been cancelled."
         : locale === "fa" ? "این رویداد به پایان رسیده است؛ ورود زنده دیگر فعال نیست." : "This event has ended; live access is closed."} />;
+  }
+
+  if (!session) {
+    const returnTo = `/${locale}/academy/${encodeURIComponent(slug)}/live?enter=1`;
+    redirect(`/${locale}/academy/${encodeURIComponent(slug)}/join?returnTo=${encodeURIComponent(returnTo)}`);
   }
 
   const paid = !isFreePrice(item.price);
@@ -96,7 +101,8 @@ export default async function LivePage({ params }: Props) {
       eventStatus={eventStatus}
       chatEnabled={stream?.chatEnabled ?? true}
       qaEnabled={stream?.qaEnabled ?? true}
-      requiresAccount={paid}
+      requiresAccount={true}
+      autoJoin={query.enter === "1"}
       prefillName={prefillName}
       prefillEmail={prefillEmail}
       hlsUrl={hlsUrl}
